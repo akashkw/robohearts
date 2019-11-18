@@ -24,8 +24,9 @@ agent_list[2] = RandomAI(playersNameList[2], {'print_info': True})
 agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
 '''
 
-
+print('yee')
 env = gym.make('Hearts_Card_Game-v0')
+print('yee')
 env.__init__(playersNameList, MAX_SCORE)
 
 for i_episode in range(NUM_EPISODES):
