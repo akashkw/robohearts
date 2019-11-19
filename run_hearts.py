@@ -9,16 +9,18 @@ NUM_EPISODES = 1
 MAX_SCORE = 100
 
 # Delay in seconds
-DELAY = 0.1
+DELAY = 0
 
 playersNameList = ['Akash', 'Lucas', 'Peter', 'Scott']
 agent_list = [0, 0, 0, 0]
 
 # Human vs Random
+'''
 agent_list[0] = Human(playersNameList[0], {'print_info' : True})
-agent_list[1] = RandomAI(playersNameList[1], {'print_info': True})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': True})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
+agent_list[1] = Human(playersNameList[1], {'print_info': True})
+agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
+agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
+'''
 
 # Random play
 '''
@@ -29,12 +31,10 @@ agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
 '''
 
 # Random play muted
-'''
 agent_list[0] = RandomAI(playersNameList[0], {'print_info': False})
 agent_list[1] = RandomAI(playersNameList[1], {'print_info': False})
 agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
 agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
-'''
 
 env = gym.make('Hearts_Card_Game-v0')
 env.__init__(playersNameList, MAX_SCORE)
