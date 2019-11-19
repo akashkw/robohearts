@@ -66,10 +66,13 @@ class Human:
                 pass
         elif observation['event_name'] == 'ShowTrickEnd':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'RoundEnd':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'GameOver':
             if self.print_info:
-                print(handle_event(observation))         
+                #print(handle_event(observation))         
+                pass

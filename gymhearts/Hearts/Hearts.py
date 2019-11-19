@@ -21,7 +21,7 @@ cardsToPass = 3
 
 
 def pretty_card(card):
-    rank = card[0] if card[0] != 'T' else '10'
+    rank = card[0].upper() if card[0] != 'T' else '10'
     suit = card[1]
     suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
     return f'[{rank}{suit_lookup[suit]}]'
