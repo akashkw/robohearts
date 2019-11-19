@@ -36,7 +36,8 @@ class RandomAI:
         
         elif observation['event_name'] == 'ShowPlayerHand':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
 
         elif observation['event_name'] == 'PlayTrick':
             if self.print_info:
