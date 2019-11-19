@@ -60,5 +60,13 @@ def handle_event(observation):
         phand = [pretty_card(card) for card in hand]
         retstring = f"\n{observation['data']['playerName']}'s Hand\n{' '.join(phand)}\n"
         return retstring
+    elif event == 'PlayTrick':
+        hand = observation['data']['hand']
+        phand = [pretty_card(card) for card in hand]
+        filtered_hand = filter_valid_moves(observation)
+        filtered_phand = [pretty_card(card) for card in filtered_hand]
+        retstring = f"\n{observation['data']['playerName']}'s Hand\n{' '.join(phand)}\n"
+        retstring += f"\nValid Moves\n{' '.join(filtered_phand)}\n"
+        return retstring
     else:
         return observation

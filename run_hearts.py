@@ -9,7 +9,7 @@ NUM_EPISODES = 1
 MAX_SCORE = 100
 
 # Delay in seconds
-DELAY = 0.01
+DELAY = 2
 
 playersNameList = ['Akash', 'Lucas', 'Peter', 'Scott']
 agent_list = [0, 0, 0, 0]

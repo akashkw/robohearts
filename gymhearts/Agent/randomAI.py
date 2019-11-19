@@ -50,7 +50,7 @@ class RandomAI:
                 #choose_card = random.choice(observation['data']['hand'])
                 choose_card = random.choice(filter_valid_moves(observation))
                 if self.print_info:
-                    print(self.name, ' chose card :: ', pretty_card(choose_card))
+                    print(self.name, 'chose card ::', pretty_card(choose_card))
 
             return {
                     "event_name" : "PlayTrick_Action",
