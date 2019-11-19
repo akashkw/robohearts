@@ -44,7 +44,8 @@ class RandomAI:
             if '2c' in hand:
                 choose_card = '2c'
             else:
-                choose_card = random.choice(observation['data']['hand'])
+                #choose_card = random.choice(observation['data']['hand'])
+                choose_card = random.choice(filter_valid_moves(observation))
                 if self.print_info:
                     print(self.name, ' choose card: ', choose_card)
 

@@ -210,7 +210,7 @@ class HeartsEnv(Env):
     
         self.renderInfo = {'printFlag': False, 'Msg': ""}
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = '\n*** Hearts Start ***\n'
+        self.renderInfo['Msg'] = '\n========== BEGIN THE GAME OF HEARTS ===========\n'
     
     def _event_NewRound(self):
 
@@ -251,9 +251,10 @@ class HeartsEnv(Env):
         self.event_data_for_server = {'now_player_index': 0}
 
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = '\n*** Start Round {0} ***\n'.format(self.round)
+        self.renderInfo['Msg'] = '\n==== BEGIN ROUND {0} ====\n'.format(self.round)
+        self.renderInfo['Msg'] += 'Scores\n======\n'
         for p in self.players:
-            self.renderInfo['Msg'] += '{0}: {1}\n'.format(p.name, p.score)
+            self.renderInfo['Msg'] += '{} : {}\n'.format(p.name, p.score)
 
     def _event_PassCards(self, action_data):
 
@@ -277,7 +278,7 @@ class HeartsEnv(Env):
             
             if now_player_index == 0:
                 self.renderInfo['printFlag'] = True
-                self.renderInfo['Msg'] = '\n*** Pass Cards Start ***\n'
+                self.renderInfo['Msg'] = '\n===== Start Passing Cards =====\n'
             
         else:
             self.event = 'ShowPlayerHand'
@@ -285,7 +286,7 @@ class HeartsEnv(Env):
             self._event_ShowPlayerHand()
             
             self.renderInfo['printFlag'] = True
-            self.renderInfo['Msg'] = '\n*** Pass Cards Over ***\n'
+            self.renderInfo['Msg'] = '\n==== Passing Cards Complete ===\n'
     
     def _event_ShowPlayerHand(self):
 

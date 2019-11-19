@@ -31,6 +31,9 @@ def filter_valid_moves(observation):
         for card in hand:
             if 'h' not in card:
                 valid_cards.append(card)
+        # Nothing but cards in hand
+        if not valid_cards:
+            valid_cards = hand
     # Not starting trick, valid suit in hand, only cards of suit valid
     elif suit_in_hand:
         for card in hand:
@@ -39,5 +42,4 @@ def filter_valid_moves(observation):
     # Not starting trick, valid suit not in hand, all cards valid
     else:
         valid_cards = hand
-
     return valid_cards
