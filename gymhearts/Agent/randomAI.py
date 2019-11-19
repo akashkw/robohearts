@@ -24,7 +24,7 @@ class RandomAI:
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
-                print(self.name, ' is passing :: ', " ".join([pretty_card(card) for card in passCards]))
+                print(self.name, 'is passing ::', " ".join([pretty_card(card) for card in passCards]))
                 
             return {
                     "event_name" : "PassCards_Action",
@@ -61,7 +61,8 @@ class RandomAI:
                 }
         elif observation['event_name'] == 'ShowTrickAction':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'ShowTrickEnd':
             if self.print_info:
                 print(handle_event(observation))
