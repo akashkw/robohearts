@@ -20,6 +20,12 @@ hearts = 3
 cardsToPass = 3
 
 
+def pretty_card(card):
+    rank = card[0] if card[0] != 'T' else '10'
+    suit = card[1]
+    suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
+    return f'[{rank}{suit_lookup[suit]}]'
+
 class HeartsEnv(Env):
 
     def __init__(self, playersName, maxScore=100):
@@ -160,15 +166,12 @@ class HeartsEnv(Env):
 
     # show cards played in current trick
     def _printCurrentTrick(self):
-        trickStr = '\nCurrent table:\n'
-        trickStr += "Trick suit: " + self.currentTrick.suit.__str__() + "\n"
+        trickStr = '\nTable\n===========\n'
         for i, card in enumerate(self.currentTrick.trick):
             if self.currentTrick.trick[i] is not 0:
-                trickStr += self.players[i].name + ": " + str(card) + "\n"
+                trickStr += self.players[i].name + ": " + pretty_card(str(card)) + "\n"
             else:
-                trickStr += self.players[i].name + ": None\n"
-        
-        trickStr += 'IsHeartsBroken: {0}\n'.format(self.heartsBroken)
+                trickStr += self.players[i].name + ": [  ]\n"
         return trickStr
 
     
