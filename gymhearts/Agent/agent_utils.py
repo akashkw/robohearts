@@ -2,6 +2,12 @@
 Utilities to be implemented in all agents
 '''
 
+def pretty_card(card):
+    rank = card[0] if card[0] != 'T' else '10'
+    suit = card[1]
+    suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
+    return f'[{rank}{suit_lookup[suit]}]'
+
 def filter_valid_moves(observation):
     data = observation['data']
     hand = data['hand']
@@ -46,3 +52,10 @@ def filter_valid_moves(observation):
         if trick_num == 1 and len(valid_cards) > 1:
             valid_cards = [card for card in valid_cards if card != 'Qs']
     return valid_cards
+
+def handle_event(observation):
+    event = observation['event_name']
+    if event == 'NewRound':
+        return "HERE WE GO"
+    else:
+        return observation
