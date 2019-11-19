@@ -55,7 +55,14 @@ def filter_valid_moves(observation):
 
 def handle_event(observation):
     event = observation['event_name']
-    if event == 'NewRound':
-        return "HERE WE GO"
+    if event == 'GameStart':
+        return ""
+    elif event == 'NewRound':
+        return ""
+    elif event == 'PassCards':
+        hand = observation['data']['hand']
+        phand = [pretty_card(card) for card in hand]
+        retstring = f"\n{observation['data']['playerName']}'s Hand\n{' '.join(phand)}\n"
+        return retstring
     else:
         return observation

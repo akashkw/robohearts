@@ -9,18 +9,21 @@ class Human:
     def Do_Action(self, observation):
         if observation['event_name'] == 'GameStart':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'NewRound':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
             passCards = []
+            english_ref = {1 : 'first', 2 : 'second', 3 : 'third'}
             for i in range(3):
-                passCards.append(input('{0}, please select card {1} to pass :: '.format(self.name, i+1)))
+                passCards.append(input('{0}, please select your {1} card to pass :: '.format(self.name, english_ref[i+1])))
             
-            print('passCards: ', passCards)
+            print(f'\n{self.name} is passing : {" ".join([pretty_card(card) for card in passCards])}')
             return {
                     "event_name" : "PassCards_Action",
                     "data" : {

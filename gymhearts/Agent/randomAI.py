@@ -11,10 +11,12 @@ class RandomAI:
     def Do_Action(self, observation):
         if observation['event_name'] == 'GameStart':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'NewRound':
             if self.print_info:
-                print(handle_event(observation))
+                #print(handle_event(observation))
+                pass
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
