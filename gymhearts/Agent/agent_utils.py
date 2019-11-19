@@ -1,3 +1,6 @@
+'''
+Utilities to be implemented in all agents
+'''
 
 def filter_valid_moves(observation):
     data = observation['data']
