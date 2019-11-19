@@ -1,3 +1,6 @@
+from .agent_utils import *
+
+
 class Human:
     def __init__(self, name, params):
         self.name = name

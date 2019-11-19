@@ -11,12 +11,10 @@ playersNameList = ['Akash', 'Lucas', 'Peter', 'Scott']
 agent_list = [0, 0, 0, 0]
 
 # Human vs Random
-'''
 agent_list[0] = Human(playersNameList[0], {'print_info' : True})
 agent_list[1] = RandomAI(playersNameList[1], {'print_info': False})
 agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
 agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
-'''
 
 # Random play
 '''
