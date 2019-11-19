@@ -3,10 +3,9 @@ from datetime import datetime
 from .agent_utils import *
 
 class RandomAI:
-    def __init__(self, name, params = None):
+    def __init__(self, name, params=None):
         random.seed(datetime.now())
         self.name = name
-
         self.print_info = params.get('print_info', False) 
     
     def Do_Action(self, observation):
