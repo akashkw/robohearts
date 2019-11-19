@@ -1,14 +1,18 @@
 class Human:
     def __init__(self, name, params):
         self.name = name
+        self.print_info = params.get('print_info', False)
     
     def Do_Action(self, observation):
         if observation['event_name'] == 'GameStart':
-            print(observation)
+            if self.print_info:
+                print(observation)
         elif observation['event_name'] == 'NewRound':
-            print(observation)
+            if self.print_info:
+                print(observation)
         elif observation['event_name'] == 'PassCards':
-            print(observation)
+            if self.print_info:
+                print(observation)
             passCards = []
             for i in range(3):
                 passCards.append(input('{0} pass card{1}: '.format(self.name, i+1)))
@@ -23,10 +27,12 @@ class Human:
                 }
         
         elif observation['event_name'] == 'ShowPlayerHand':
-            print(observation)
+            if self.print_info:
+                print(observation)
         
         elif observation['event_name'] == 'PlayTrick':
-            print(observation)
+            if self.print_info:
+                print(observation)
             hand = observation['data']['hand']
             if '2c' in hand:
                 choose_card = '2c'
@@ -41,10 +47,14 @@ class Human:
                     }
                 }
         elif observation['event_name'] == 'ShowTrickAction':
-            print(observation)
+            if self.print_info:
+                print(observation)
         elif observation['event_name'] == 'ShowTrickEnd':
-            print(observation)
+            if self.print_info:
+                print(observation)
         elif observation['event_name'] == 'RoundEnd':
-            print(observation)
+            if self.print_info:
+                print(observation)
         elif observation['event_name'] == 'GameOver':
-            print(observation)            
+            if self.print_info:
+                print(observation)            
