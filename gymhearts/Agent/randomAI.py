@@ -1,15 +1,12 @@
 import random
 from datetime import datetime
+from .agent_utils import *
 
 class RandomAI:
-    def __init__(self, name, params = None):
+    def __init__(self, name, params=None):
         random.seed(datetime.now())
         self.name = name
-        
-        if params != None:
-            self.print_info = params['print_info']
-        else:
-            self.print_info = False
+        self.print_info = params.get('print_info', False) 
     
     def Do_Action(self, observation):
         if observation['event_name'] == 'GameStart':
