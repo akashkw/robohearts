@@ -5,13 +5,13 @@ from gymhearts.Agent.human import Human
 from gymhearts.Agent.randomAI import RandomAI
 from time import sleep
 
-NUM_EPISODES = 10
+NUM_EPISODES = 1
 MAX_SCORE = 100
 
 # Delay in seconds
-DELAY = 1
+DELAY = 0.01
 
-playersNameList = ['Akash', 'Lucas', 'Peter', 'Scott']
+playersNameList = ['Akash Kwatra', 'Lucas Kabela', 'Peter Stone', 'Scott Niekum']
 agent_list = [0, 0, 0, 0]
 
 # Human vs Random
@@ -62,8 +62,9 @@ for i_episode in range(NUM_EPISODES):
         observation, reward, done, info = env.step(action)
 
         if reward != None:
-            print('\nreward: {0}\n'.format(reward))
+            #print('\nreward: {0}\n'.format(reward))
+            pass
 
         if done:
-            print('\nGame Over!!\n')
+            #print('\nGame Over!!\n')
             break

@@ -451,10 +451,10 @@ class HeartsEnv(Env):
             }
 
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = '\n*** Trick {0} ***\n'.format(self.trickNum+1)
-        self.renderInfo['Msg'] += 'Winner: {0}\n'.format(self.players[self.trickWinner].name)
-        self.renderInfo['Msg'] += 'cards: {0}\n'.format(cards)
-        self.renderInfo['Msg'] += 'IsHeartsBroken: {0}\n'.format(self.heartsBroken)
+        self.renderInfo['Msg'] = '\n===== Trick {0} =====\n\n'.format(self.trickNum+1)
+        self.renderInfo['Msg'] += '{0}\n'.format(" ".join([pretty_card(c) for c in cards]))
+        self.renderInfo['Msg'] += '\nWinner: {0}\n'.format(self.players[self.trickWinner].name)
+        #self.renderInfo['Msg'] += 'IsHeartsBroken: {0}\n'.format(self.heartsBroken)
         
         self.currentTrick = Trick()
              
@@ -490,11 +490,11 @@ class HeartsEnv(Env):
             }
 
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = '\n*** Round {0} End ***\n'.format(self.round)
-        for p in self.players:
-            self.renderInfo['Msg'] += '{0}: {1}\n'.format(p.name, p.score)
+        self.renderInfo['Msg'] = '\n==== ROUND {0} OVER ====\n'.format(self.round)
+        #for p in self.players:
+            #self.renderInfo['Msg'] += '{0}: {1}\n'.format(p.name, p.score)
             
-        self.renderInfo['Msg'] += '\nShootingMoon: {0}\n'.format(self.shootingMoon)
+        #self.renderInfo['Msg'] += '\nShootingMoon: {0}\n'.format(self.shootingMoon)
         
         temp_loser = max(self.players, key=lambda x:x.score)
         # new round if no one has lost
@@ -534,12 +534,13 @@ class HeartsEnv(Env):
             }
 
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = '\n*** Game Over ***\n'
+        self.renderInfo['Msg'] = '\n======= GAME OVER =======\n'
+        self.renderInfo['Msg'] += 'Scores\n======\n'
         for p in self.players:
-            self.renderInfo['Msg'] += '{0}: {1}\n'.format(p.name, p.score)
+            self.renderInfo['Msg'] += '{0} : {1}\n'.format(p.name, p.score)
         
-        self.renderInfo['Msg'] += '\nRound: {0}\n'.format(self.round)
-        self.renderInfo['Msg'] += 'Winner: {0}\n'.format(winner.name)
+        self.renderInfo['Msg'] += '======\n'
+        self.renderInfo['Msg'] += '{} won in {} rounds!\n'.format(winner.name, self.round)
         
         self.event = None
 
