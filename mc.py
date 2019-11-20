@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 import numpy as np
-from Hearts import Card
+from gymhearts.Hearts import Card
 
 class MC:
     def __init__(self, name, epsilon=.05, gamma=.95, alpha=.1, params = None):
