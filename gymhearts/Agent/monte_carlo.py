@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .agent_utils import *
 
-class MC:
+class MonteCarlo:
     def __init__(self, name, params=dict()):
         # Game Params
         self.name = name

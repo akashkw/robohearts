@@ -2,7 +2,7 @@ import gym
 
 from Hearts import *
 from Agent.human import Human
-from Agent.randomAI import RandomAI
+from Agent.random_agent import RandomAgent
 
 NUM_EPISODES = 10
 MAX_SCORE = 100
@@ -11,17 +11,17 @@ playersNameList = ['Akash', 'Aqua', 'Megumin', 'Darkness']
 agent_list = [0, 0, 0, 0]
 
 # Human vs Random
-agent_list[0] = Human(playersNameList[0], {})
-agent_list[1] = RandomAI(playersNameList[1], {'print_info': False})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
+agent_list[0] = Human(playersNameList[0], {'print_info': True})
+agent_list[1] = RandomAgent(playersNameList[1], {'print_info': False})
+agent_list[2] = RandomAgent(playersNameList[2], {'print_info': False})
+agent_list[3] = RandomAgent(playersNameList[3], {'print_info': False})
 
 # Random play
 '''
-agent_list[0] = RandomAI(playersNameList[0], {'print_info': True})
-agent_list[1] = RandomAI(playersNameList[1], {'print_info': True})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': True})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
+agent_list[0] = RandomAgent(playersNameList[0], {'print_info': True})
+agent_list[1] = RandomAgent(playersNameList[1], {'print_info': True})
+agent_list[2] = RandomAgent(playersNameList[2], {'print_info': True})
+agent_list[3] = RandomAgent(playersNameList[3], {'print_info': True})
 '''
 
 

@@ -2,7 +2,8 @@ import gym
 
 from gymhearts.Hearts import *
 from gymhearts.Agent.human import Human
-from gymhearts.Agent.randomAI import RandomAI
+from gymhearts.Agent.random_agent import RandomAgent
+from gymhearts.Agent.monte_carlo import MonteCarlo
 from time import sleep
 
 NUM_EPISODES = 1
@@ -18,22 +19,22 @@ agent_list = [0, 0, 0, 0]
 '''
 agent_list[0] = Human(playersNameList[0], {'print_info' : True})
 agent_list[1] = Human(playersNameList[1], {'print_info': True})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
+agent_list[2] = RandomAgent(playersNameList[2], {'print_info': False})
+agent_list[3] = RandomAgent(playersNameList[3], {'print_info': False})
 '''
 
 # Random play
-agent_list[0] = RandomAI(playersNameList[0], {'print_info': True})
-agent_list[1] = RandomAI(playersNameList[1], {'print_info': True})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': True})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
+agent_list[0] = RandomAgent(playersNameList[0], {'print_info': True})
+agent_list[1] = RandomAgent(playersNameList[1], {'print_info': True})
+agent_list[2] = RandomAgent(playersNameList[2], {'print_info': True})
+agent_list[3] = RandomAgent(playersNameList[3], {'print_info': True})
 
 # Random play muted
 '''
-agent_list[0] = RandomAI(playersNameList[0], {'print_info': False})
-agent_list[1] = RandomAI(playersNameList[1], {'print_info': False})
-agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
-agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
+agent_list[0] = RandomAgent(playersNameList[0], {'print_info': False})
+agent_list[1] = RandomAgent(playersNameList[1], {'print_info': False})
+agent_list[2] = RandomAgent(playersNameList[2], {'print_info': False})
+agent_list[3] = RandomAgent(playersNameList[3], {'print_info': False})
 '''
 
 env = gym.make('Hearts_Card_Game-v0')
