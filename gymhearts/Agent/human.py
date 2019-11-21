@@ -6,15 +6,7 @@ class Human:
         self.print_info = params.get('print_info', False)
     
     def Do_Action(self, observation):
-        if observation['event_name'] == 'GameStart':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        elif observation['event_name'] == 'NewRound':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        elif observation['event_name'] == 'PassCards':
+        if observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
             passCards = []
@@ -38,11 +30,6 @@ class Human:
                     }
                 }
         
-        elif observation['event_name'] == 'ShowPlayerHand':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        
         elif observation['event_name'] == 'PlayTrick':
             if self.print_info:
                 print(handle_event(observation))
@@ -59,19 +46,3 @@ class Human:
                         'action': {'card': choose_card}
                     }
                 }
-        elif observation['event_name'] == 'ShowTrickAction':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        elif observation['event_name'] == 'ShowTrickEnd':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        elif observation['event_name'] == 'RoundEnd':
-            if self.print_info:
-                #print(handle_event(observation))
-                pass
-        elif observation['event_name'] == 'GameOver':
-            if self.print_info:
-                #print(handle_event(observation))         
-                pass

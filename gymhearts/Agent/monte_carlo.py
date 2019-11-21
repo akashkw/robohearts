@@ -5,7 +5,7 @@ from datetime import datetime
 from .agent_utils import *
 
 class MC:
-    def __init__(self, name, epsilon=.05, gamma=.95, alpha=.1, params=dict()):
+    def __init__(self, name, params=dict()):
         # Game Params
         self.name = name
         self.print_info = params.get('print_info', False)
