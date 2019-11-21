@@ -48,11 +48,9 @@ def filter_valid_moves(observation):
     # Not starting trick, valid suit not in hand, all cards valid
     else:
         valid_cards = hand
-        # Can't play queen of spades in first trick or hearts
+        # Can't play queen of spades or hearts in first trick
         if trick_num == 1 and len(valid_cards) > 1:
-            valid_cards = [card for card in valid_cards if card != 'Qs']
-        if trick_num == 1 and len(valid_cards) > 1:
-            valid_cards = [card for card in valid_cards if 'h' not in card]
+            valid_cards = [card for card in valid_cards if card != 'Qs' and 'h' not in card]
     return valid_cards
 
 def handle_event(observation):
