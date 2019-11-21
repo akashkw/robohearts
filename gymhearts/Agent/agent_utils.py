@@ -2,12 +2,24 @@
 Utilities to be implemented in all agents
 '''
 
+suits = ["c", "d", "s", "h"]
+ranks = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+
+def whole_deck():
+    deck = list()
+    for suit in suit:
+        for rank in ranks:
+            deck.append(f'{rank}{suit}')
+    return deck
+
+# Format cards from Hearts.Card format to pretty format
 def pretty_card(card):
     rank = card[0].upper() if card[0] != 'T' else '10'
     suit = card[1]
     suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
     return f'[{rank}{suit_lookup[suit]}]'
 
+# Return a list of all valid moves in Hearts.Card format
 def filter_valid_moves(observation):
     data = observation['data']
     hand = data['hand']
@@ -53,6 +65,7 @@ def filter_valid_moves(observation):
             valid_cards = [card for card in valid_cards if card != 'Qs' and 'h' not in card]
     return valid_cards
 
+# Handle specific observations by presenting human friendly prompts
 def handle_event(observation):
     event = observation['event_name']
     if event == 'PassCards':

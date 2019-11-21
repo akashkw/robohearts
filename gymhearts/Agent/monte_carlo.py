@@ -1,26 +1,23 @@
 import random
-from datetime import datetime
 import numpy as np
-from gymhearts.Hearts import Card
-from gymhearts.Agent.agent_utils import filter_valid_moves
+from datetime import datetime
+
+from .agent_utils import *
 
 class MC:
     def __init__(self, name, epsilon=.05, gamma=.95, alpha=.1, params=dict()):
+        # Game Params
         self.name = name
-        self.EPSILON = epsilon
-        self.GAMMA = gamma
-        self.ALPHA = alpha
-
-        # simple weight vector, 1 weight for each card in hand
-        self.weight_vec = params.get('weights', np.zeros(52))
-
-        #used for feature vector encoding
-        self.all_cards = []
-        for suit in range(0,4):
-            for rank in range(2,15):    
-                self.all_cards.append(str(Card(rank, suit)))
-
         self.print_info = params.get('print_info', False)
+
+        # Agent Params
+        self.EPSILON = params.get('epsilon', .05)
+        self.GAMMA = params.get('gamma', .95)
+        self.ALPHA = params.get('alpha', .1)
+
+        # Value function params
+        self.weight_vec = params.get('weight_vec', np.zeros(52))
+        self.whole_deck = whole_deck()
 
     def Do_Action(self, observation):
         if observation['event_name'] == 'PassCards':
