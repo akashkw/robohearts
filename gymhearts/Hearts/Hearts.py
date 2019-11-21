@@ -365,7 +365,6 @@ class HeartsEnv(Env):
                         if not current_player.hasOnlyHearts():
                             #print (current_player.hasOnlyHearts())
                             #print (current_player.hand.__str__())
-                            print ("Hearts have not been broken.")
                             addCard = None
                         else:
                             self.currentTrick.setTrickSuit(addCard)
@@ -376,7 +375,6 @@ class HeartsEnv(Env):
                 # player tries to play off suit but has trick suit
                 if addCard is not None and addCard.suit != self.currentTrick.suit:
                     if current_player.hasSuit(self.currentTrick.suit):
-                        print ("Must play the suit of the current trick.")
                         addCard = None
                     elif addCard.suit == Suit(hearts):
                         self.heartsBroken = True
@@ -393,7 +391,6 @@ class HeartsEnv(Env):
 
                 if addCard is not None and self.currentTrick.suit == Suit(noSuit):
                     if addCard.suit == Suit(hearts) and not self.heartsBroken:
-                        print ("Hearts not yet broken.")
                         addCard = None
 
                 if addCard is not None:
