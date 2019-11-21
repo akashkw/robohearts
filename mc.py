@@ -2,37 +2,35 @@ import random
 from datetime import datetime
 import numpy as np
 from gymhearts.Hearts import Card
+from gymhearts.Agent.agent_utils import filter_valid_moves
 
 class MC:
-    def __init__(self, name, epsilon=.05, gamma=.95, alpha=.1, params = None):
+    def __init__(self, name, epsilon=.05, gamma=.95, alpha=.1, params=dict()):
         self.name = name
         self.EPSILON = epsilon
         self.GAMMA = gamma
         self.ALPHA = alpha
-        # simple weight vector, 1 for each card 
-        self.weight_vec = np.zeros(52)
+
+        # simple weight vector, 1 weight for each card in hand
+        self.weight_vec = params.get('weights', np.zeros(52))
+
         #used for feature vector encoding
         self.all_cards = []
         for suit in range(0,4):
             for rank in range(2,15):    
                 self.all_cards.append(str(Card(rank, suit)))
 
-        if params != None:
-            self.print_info = params['print_info']
-        else:
-            self.print_info = False
-    
+        self.print_info = params.get('print_info', False)
 
     def Do_Action(self, observation):
         if observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(observation)
-            
-            passCards = random.sample(observation['data']['hand'],3)
+            # Random passing of a card 
+            passCards = random.sample(observation['data']['hand'], 3 )
             
             if self.print_info:
                 print(self.name, ' pass cards: ', passCards)
-                
             return {
                     "event_name" : "PassCards_Action",
                     "data" : {
@@ -48,7 +46,7 @@ class MC:
             if '2c' in hand:
                 choose_card = '2c'
             else:
-                card_idx = self.epsilon_action(observation['data']['hand'])
+                card_idx = self.epsilon_action(observation)
                 choose_card = hand[card_idx]
                 if self.print_info:
                     print(self.name, ' choose card: ', choose_card)
@@ -73,9 +71,10 @@ class MC:
             value = value_fn.sum()
             self.weight_vec += self.ALPHA * (reward - value)*self.get_feature_vec(observation['data']['hand'])
 
-    def epsilon_action(self, arr):
+    def epsilon_action(self, observation):
+        arr = observation['data']['hand']
         value_fn = self.get_value_fn(arr)
-        return self.q_argmax(value_fn, arr) if np.random.uniform(0, 1) > self.EPSILON else np.random.randint(0, len(arr))
+        return self.q_argmax(value_fn, observation) if np.random.uniform(0, 1) > self.EPSILON else np.random.randint(0, len(arr))
 
     def get_value_fn(self, arr):
         return self.get_feature_vec(arr) * self.weight_vec
@@ -86,12 +85,13 @@ class MC:
             feature_vec[self.all_cards.index(card)] = 1
         return feature_vec 
 
-    def q_argmax(self, value_fn, arr):
+    def q_argmax(self, value_fn, observation):
         value = value_fn.sum()
         i_max = 0
-        value_p = value - value_fn[0]
-        for i in range(len(arr)):
-            idx = self.all_cards.index(arr[i])
+        value_p = float('-inf')
+        valid = filter_valid_moves(observation)
+        for i in range(len(valid)):
+            idx = self.all_cards.index(valid[i])
             if(value - value_fn[idx] > value_p):
                 i_max = i
                 value_p = value - value_fn[idx]
