@@ -2,7 +2,7 @@ from .agent_utils import *
 
 
 class Human:
-    def __init__(self, name, params=None):
+    def __init__(self, name, params=dict()):
         self.name = name
         self.print_info = params.get('print_info', False)
     
