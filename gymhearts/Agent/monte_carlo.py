@@ -22,12 +22,12 @@ class MC:
     def Do_Action(self, observation):
         if observation['event_name'] == 'PassCards':
             if self.print_info:
-                print(observation)
-            # Random passing of a card 
-            passCards = random.sample(observation['data']['hand'], 3 )
+                print(handle_event(observation))
+            passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
-                print(self.name, ' pass cards: ', passCards)
+                print(self.name, 'is passing ::', " ".join([pretty_card(card) for card in passCards]))
+                
             return {
                     "event_name" : "PassCards_Action",
                     "data" : {
@@ -35,9 +35,10 @@ class MC:
                         'action': {'passCards': passCards}
                     }
                 }
+
         elif observation['event_name'] == 'PlayTrick':
             if self.print_info:
-                print(observation)
+                print(handle_event(observation))
 
             hand = observation['data']['hand']
             if '2c' in hand:
@@ -46,7 +47,7 @@ class MC:
                 card_idx = self.epsilon_action(observation)
                 choose_card = filter_valid_moves(observation)[card_idx]
                 if self.print_info:
-                    print(self.name, ' choose card: ', choose_card)
+                    print(self.name, 'chose card ::', pretty_card(choose_card))
 
             return {
                     "event_name" : "PlayTrick_Action",
@@ -55,9 +56,6 @@ class MC:
                         'action': {'card': choose_card}
                     }
                 }
-        else:
-            if self.print_info:
-                print(observation)
 
     def update_reward_fn(self, history, reward):
         returns = reward

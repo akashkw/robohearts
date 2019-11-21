@@ -20,7 +20,6 @@ class RandomAI:
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
-            
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
