@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime
 
 from .agent_utils import *
+from .hand_approx import inhand_features
 
 class MonteCarlo:
     def __init__(self, name, params=dict()):
@@ -63,7 +64,7 @@ class MonteCarlo:
             hand = observation['data']['hand']
             value = self.value(hand)
             error = ret - value
-            features = self.features(hand)
+            features = inhand_features(hand)
             self.weight_vec += self.ALPHA * error * features
             ret *= self.GAMMA
             errors.append(error)
@@ -77,16 +78,9 @@ class MonteCarlo:
         else:
             return self.greedy_action(observation)
 
-    # Return the features corresponding to a hand
-    def features(self, hand):
-        feature_vec = np.zeros(52)
-        for card in hand:
-            feature_vec[self.deck_reference[card]] = 1
-        return feature_vec 
-
     # Return the value of a hand
     def value(self, hand):
-        value_vec = self.features(hand) * self.weight_vec
+        value_vec = inhand_features(hand) * self.weight_vec
         return value_vec.sum()
 
     # Perform a one-step lookahead and select the action that has the best expected value
