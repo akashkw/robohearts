@@ -57,15 +57,14 @@ class MonteCarlo:
                     }
                 }
 
-    def update_value_weights(self, history, reward):
-        returns = reward
+    def update_weights(self, history, reward):
         for observation in reversed(history):
-            hand = observation['data']['hand'] 
-            reward = 0 if reward == None else reward
-            returns = reward + self.GAMMA * returns
-            value_fn = self.get_value_fn(observation['data']['hand'])
-            value = value_fn.sum()
-            self.weight_vec += self.ALPHA * (reward - value) * self.features(hand)
+            hand = observation['data']['hand']
+            reward *= self.GAMMA
+            value = self.value(hand)
+            error = reward - value
+            features = self.features(hand)
+            self.weight_vec += self.ALPHA * error * features
 
     # Select an action using epsilon-greedy action selection
     def epsilon_greedy_selection(self, observation):
@@ -95,6 +94,6 @@ class MonteCarlo:
         for move, card in enumerate(valid_moves):
             succ_hand = [c for c in hand if c != card]
             succ_val = self.value(succ_hand)
-            if succ_val < best_succ_val:
+            if succ_val > best_succ_val:
                 best_move, best_succ_val = move, succ_val
         return best_move

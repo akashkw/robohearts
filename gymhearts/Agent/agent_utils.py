@@ -3,7 +3,7 @@ Utilities to be implemented in all agents
 '''
 
 suits = ["c", "d", "s", "h"]
-ranks = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 
 # List of all valid cards
 def create_deck():
