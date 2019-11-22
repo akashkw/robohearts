@@ -57,14 +57,14 @@ class MonteCarlo:
                     }
                 }
 
-    def update_weights(self, history, reward):
+    def update_weights(self, history, ret):
         for observation in reversed(history):
             hand = observation['data']['hand']
-            reward *= self.GAMMA
             value = self.value(hand)
-            error = reward - value
+            error = ret - value
             features = self.features(hand)
             self.weight_vec += self.ALPHA * error * features
+            ret *= self.GAMMA
 
     # Select an action using epsilon-greedy action selection
     def epsilon_greedy_selection(self, observation):
