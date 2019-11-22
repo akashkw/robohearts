@@ -5,12 +5,18 @@ Utilities to be implemented in all agents
 suits = ["c", "d", "s", "h"]
 ranks = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 
-def whole_deck():
+# List of all valid cards
+def create_deck():
     deck = list()
-    for suit in suit:
+    for suit in suits:
         for rank in ranks:
             deck.append(f'{rank}{suit}')
     return deck
+
+# Reference to get index for each card
+def deck_reference():
+    deck = create_deck()
+    return {card : i for i, card in enumerate(deck)}
 
 # Format cards from Hearts.Card format to pretty format
 def pretty_card(card):

@@ -17,7 +17,7 @@ class MonteCarlo:
 
         # Value function params
         self.weight_vec = params.get('weight_vec', np.zeros(52))
-        self.whole_deck = whole_deck()
+        self.deck_reference = deck_reference()
 
     def Do_Action(self, observation):
         if observation['event_name'] == 'PassCards':
@@ -44,8 +44,8 @@ class MonteCarlo:
             if '2c' in hand:
                 choose_card = '2c'
             else:
-                card_idx = self.epsilon_action(observation)
-                choose_card = filter_valid_moves(observation)[card_idx]
+                action = self.epsilon_greedy_selection(observation)
+                choose_card = filter_valid_moves(observation)[action]
                 if self.print_info:
                     print(self.name, 'chose card ::', pretty_card(choose_card))
 
@@ -57,37 +57,44 @@ class MonteCarlo:
                     }
                 }
 
-    def update_reward_fn(self, history, reward):
+    def update_value_weights(self, history, reward):
         returns = reward
         for observation in reversed(history):
+            hand = observation['data']['hand'] 
             reward = 0 if reward == None else reward
-            returns = reward + self.GAMMA*returns
+            returns = reward + self.GAMMA * returns
             value_fn = self.get_value_fn(observation['data']['hand'])
             value = value_fn.sum()
-            self.weight_vec += self.ALPHA * (reward - value)*self.get_feature_vec(observation['data']['hand'])
+            self.weight_vec += self.ALPHA * (reward - value) * self.features(hand)
 
-    def epsilon_action(self, observation):
-        arr = observation['data']['hand']
-        value_fn = self.get_value_fn(arr)
-        return self.q_argmax(value_fn, observation) if np.random.uniform(0, 1) > self.EPSILON else np.random.randint(0, len(filter_valid_moves(observation)))
+    # Select an action using epsilon-greedy action selection
+    def epsilon_greedy_selection(self, observation):
+        rand = np.random.uniform(0,1)
+        if rand < self.EPSILON:
+            return np.random.randint(0, len(filter_valid_moves(observation)))
+        else:
+            return self.greedy_action(observation)
 
-    def get_value_fn(self, arr):
-        return self.get_feature_vec(arr) * self.weight_vec
-
-    def get_feature_vec(self, arr):
+    # Return the features corresponding to a hand
+    def features(self, hand):
         feature_vec = np.zeros(52)
-        for card in arr:
-            feature_vec[self.all_cards.index(card)] = 1
+        for card in hand:
+            feature_vec[self.deck_reference[card]] = 1
         return feature_vec 
 
-    def q_argmax(self, value_fn, observation):
-        value = value_fn.sum()
-        i_max = 0
-        value_p = float('-inf')
-        valid = filter_valid_moves(observation)
-        for i in range(len(valid)):
-            idx = self.all_cards.index(valid[i])
-            if(value - value_fn[idx] > value_p):
-                i_max = i
-                value_p = value - value_fn[idx]
-        return i_max
+    # Return the value of a hand
+    def value(self, hand):
+        value_vec = self.features(hand) * self.weight_vec
+        return value_vec.sum()
+
+    # Perform a one-step lookahead and select the action that has the best expected value
+    def greedy_action(self, observation):
+        hand = observation['data']['hand']
+        valid_moves = filter_valid_moves(observation)
+        best_move, best_succ_val = None, float('-inf')
+        for move, card in enumerate(valid_moves):
+            succ_hand = [c for c in hand if c != card]
+            succ_val = self.value(succ_hand)
+            if succ_val < best_succ_val:
+                best_move, best_succ_val = move, succ_val
+        return best_move
