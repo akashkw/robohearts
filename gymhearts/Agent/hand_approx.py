@@ -58,6 +58,7 @@ def inhand_features(hand):
         feature_vec[deck[card]] = 1
     return feature_vec 
 
+
 # TODO:  Add function to build:
 # - Cards in play this trick -- 52 length vector, only up to 4 active
 # - Cards previously played in this round --- gives history of cards, 52 length vector

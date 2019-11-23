@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 
 from .agent_utils import *
-from .hand_approx import inhand_features
+from .hand_approx import inhand_features, load_model
 
 class MonteCarlo:
     def __init__(self, name, params=dict()):
@@ -18,7 +18,11 @@ class MonteCarlo:
 
         # Value function params
         self.weight_vec = params.get('weight_vec', np.zeros(52))
+        self.nn = params.get('nn_path', None)
         self.deck_reference = deck_reference()
+
+        if self.nn is not None:
+            self.nn = load_model(self.nn)
 
     def Do_Action(self, observation):
         if observation['event_name'] == 'PassCards':
@@ -81,6 +85,8 @@ class MonteCarlo:
     # Return the value of a hand
     def value(self, hand):
         value_vec = inhand_features(hand) * self.weight_vec
+        if self.nn is not None:
+            return self.nn(inhand_features(hand))
         return value_vec.sum()
 
     # Perform a one-step lookahead and select the action that has the best expected value
