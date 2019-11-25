@@ -24,9 +24,9 @@ class MonteCarlo:
         self.deck_reference = deck_reference()
 
         if self.nn is not None:
-            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+            self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
             self.nn = load_model(self.nn).double()
-            self.nn = self.nn.to(device)
+            self.nn = self.nn.to(self.device)
             self.optim = torch.optim.Adam(self.nn.parameters())
 
 
@@ -74,7 +74,7 @@ class MonteCarlo:
             hand = observation['data']['hand']
 
             if self.nn is not None:
-                update(self.nn, self.optim, self.ALPHA, ret, hand)
+                update(self.nn, self.optim, self.ALPHA, ret, hand, self.device)
             else:
                 value = self.value(hand)
                 error = ret - value
@@ -96,7 +96,7 @@ class MonteCarlo:
     def value(self, hand):
         value_vec = inhand_features(hand) * self.weight_vec
         if self.nn is not None:
-            return self.nn(torch.tensor(inhand_features(hand)).to(self.nn.device)).detach().item()
+            return self.nn(torch.tensor(inhand_features(hand)).to(self.device)).detach().item()
         return value_vec.sum()
 
     # Perform a one-step lookahead and select the action that has the best expected value

@@ -1,7 +1,10 @@
 import torch
 import numpy as np
 import torch.nn.functional as F
-from agent_utils import *
+from .agent_utils import *
+import torch.utils.tensorboard as tb
+from os import path
+
 
 class MLPClassifier(torch.nn.Module):
     def __init__(self, n_input_features=52, hidden_nodes=256, n_output_Features=1, n_layers=2):
@@ -18,6 +21,8 @@ class MLPClassifier(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(hidden_nodes, 1),
         )
+        self.logger = tb.SummaryWriter(path.join('/content/robohearts/log', 'train'), flush_secs=1)
+        self.global_step = 0
 
     def forward(self, x):
         """
@@ -28,11 +33,14 @@ class MLPClassifier(torch.nn.Module):
         """
         return self.network(x)
 
-def update(nn, optimizer, alpha, G, hand):
-    val = nn(torch.FloatTensor(inhand_features(hand)).to(nn.device))
-    returns = torch.tensor([G]).double().to(nn.device)
+def update(nn, optimizer, alpha, G, hand, device):
+    val = nn(torch.tensor(inhand_features(hand)).to(device).double())
+    returns = torch.tensor([G]).to(device).double()
     optimizer.zero_grad()
-    (alpha * .5 * F.mse_loss(val, returns)).backward()
+    loss = F.mse_loss(val, returns)
+    (alpha * .5 * loss).backward()
+    nn.logger.add_scalar('loss', loss, nn.global_step)
+    nn.global_step += 1
     optimizer.step()
 
 
@@ -54,7 +62,7 @@ def load_model(model):
     from torch import load
     from os import path
     r = model_factory['mlp']()
-    if model is not None:
+    if not model and model is not "":
         r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))
     return r
 
