@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from agent_utils import *
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=52, n_output_Features=1, n_layers=2):
+    def __init__(self, n_input_features=52, hidden_nodes=256, n_output_Features=1, n_layers=2):
         super().__init__()
 
         """
@@ -14,9 +14,9 @@ class MLPClassifier(torch.nn.Module):
             print("More or less than 2 layers is not supported, so using 2")
 
         self.network = torch.nn.Sequential(
-            torch.nn.Linear(n_input_features, 52),
+            torch.nn.Linear(n_input_features, hidden_nodes),
             torch.nn.ReLU(),
-            torch.nn.Linear(52, 1),
+            torch.nn.Linear(hidden_nodes, 1),
         )
 
     def forward(self, x):
@@ -27,6 +27,13 @@ class MLPClassifier(torch.nn.Module):
         @return: torch.Tensor((B, 1))
         """
         return self.network(x)
+
+def update(nn, optimizer, alpha, G, hand):
+    val = nn(torch.FloatTensor(inhand_features(hand)).to(nn.device))
+    returns = torch.tensor([G]).double().to(nn.device)
+    optimizer.zero_grad()
+    (alpha * .5 * F.mse_loss(val, returns)).backward()
+    optimizer.step()
 
 
 model_factory = {
@@ -46,8 +53,9 @@ def save_model(model):
 def load_model(model):
     from torch import load
     from os import path
-    r = model_factory[model]()
-    r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))
+    r = model_factory['mlp']()
+    if model is not None:
+        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))
     return r
 
 # Return the features corresponding to a hand
