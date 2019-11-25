@@ -2,7 +2,7 @@ import random
 from datetime import datetime
 from .agent_utils import *
 
-class RandomAI:
+class RandomAgent:
     def __init__(self, name, params=dict()):
         random.seed(datetime.now())
         self.name = name
@@ -20,7 +20,6 @@ class RandomAI:
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
-            
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:

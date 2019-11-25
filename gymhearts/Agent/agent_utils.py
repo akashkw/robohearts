@@ -2,12 +2,30 @@
 Utilities to be implemented in all agents
 '''
 
+suits = ["c", "d", "s", "h"]
+ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+
+# List of all valid cards
+def create_deck():
+    deck = list()
+    for suit in suits:
+        for rank in ranks:
+            deck.append(f'{rank}{suit}')
+    return deck
+
+# Reference to get index for each card
+def deck_reference():
+    deck = create_deck()
+    return {card : i for i, card in enumerate(deck)}
+
+# Format cards from Hearts.Card format to pretty format
 def pretty_card(card):
     rank = card[0].upper() if card[0] != 'T' else '10'
     suit = card[1]
     suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
     return f'[{rank}{suit_lookup[suit]}]'
 
+# Return a list of all valid moves in Hearts.Card format
 def filter_valid_moves(observation):
     data = observation['data']
     hand = data['hand']
@@ -48,11 +66,12 @@ def filter_valid_moves(observation):
     # Not starting trick, valid suit not in hand, all cards valid
     else:
         valid_cards = hand
-        # Can't play queen of spades in first trick
+        # Can't play queen of spades or hearts in first trick
         if trick_num == 1 and len(valid_cards) > 1:
-            valid_cards = [card for card in valid_cards if card != 'Qs']
+            valid_cards = [card for card in valid_cards if card != 'Qs' and 'h' not in card]
     return valid_cards
 
+# Handle specific observations by presenting human friendly prompts
 def handle_event(observation):
     event = observation['event_name']
     if event == 'PassCards':

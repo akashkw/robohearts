@@ -47,7 +47,7 @@ class MC:
                 choose_card = '2c'
             else:
                 card_idx = self.epsilon_action(observation)
-                choose_card = hand[card_idx]
+                choose_card = filter_valid_moves(observation)[card_idx]
                 if self.print_info:
                     print(self.name, ' choose card: ', choose_card)
 
@@ -74,7 +74,7 @@ class MC:
     def epsilon_action(self, observation):
         arr = observation['data']['hand']
         value_fn = self.get_value_fn(arr)
-        return self.q_argmax(value_fn, observation) if np.random.uniform(0, 1) > self.EPSILON else np.random.randint(0, len(arr))
+        return self.q_argmax(value_fn, observation) if np.random.uniform(0, 1) > self.EPSILON else np.random.randint(0, len(filter_valid_moves(observation)))
 
     def get_value_fn(self, arr):
         return self.get_feature_vec(arr) * self.weight_vec
