@@ -39,7 +39,8 @@ def update(nn, optimizer, alpha, G, hand, device):
     optimizer.zero_grad()
     loss = F.mse_loss(val, returns)
     (alpha * .5 * loss).backward()
-    nn.logger.add_scalar('loss', loss, nn.global_step)
+    if nn.global_step % 1000 == 0:
+        nn.logger.add_scalar('loss', loss, nn.global_step)
     nn.global_step += 1
     optimizer.step()
 
