@@ -21,7 +21,6 @@ class MonteCarlo:
         self.weight_vec = params.get('weight_vec', np.zeros(52))
         self.nn = params.get('nn_path', None)
         self.optim = None
-        self.deck_reference = deck_reference()
 
         if self.nn is not None:
             self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
