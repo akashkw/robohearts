@@ -104,20 +104,23 @@ def won_features(player_won):
     return feature_vec.flatten()
 
 def get_score_feature(scores):
-    feature_vec = np.zeros(4)
-    for i, score in enumerate(scores):
-        feature_vec[i] = score
-    return feature_vec
+    return np.array(scores)
 
-
-def get_features(observation, feature_list=[]):
+'''
+ Need data for feature construction - played cards and won cards can be built from TrickEnd event
+ in the primary program driver (note, played_cards could be a list, won_cards could be list of lists
+ or a dictionary (lists of lists/2d array seems easier).  Probably cleanest sol is both are np
+ arrays we update at the end of tricks in the MC agent (ie MC keeps the state).  Scores just stored
+ in a list easily. 
+'''
+def get_features(observation, feature_list=[], played_cards=None, won_cards=None, scores=None):
     features = np.inhand_features()
     if 'in_play' in feature_list:
-        features.stack(inplay_features(observation['play']))
+        np.concatenate(features, inplay_features(observation['data']['currentTrick']))
     if 'played_cards' in feature_list:
-        features.stack(played_features(observation['play']))
+        np.concatenate(features, played_features(played_cards))
     if 'cards_won' in feature_list:
-        features.stack(won_features(observation['won']))
+        np.concatenate(features, won_features(won_cards))
     if 'scores' in feature_list:
-        features.stack(get_score_feature(observation['scores']))
+        np.concatenate(features, get_score_feature(scores))
     return features
