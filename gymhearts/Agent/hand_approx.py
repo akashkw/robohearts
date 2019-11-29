@@ -37,8 +37,8 @@ class MLPClassifier(torch.nn.Module):
         """
         return self.network(x)
 
-def update(nn, optimizer, alpha, G, observation, device):
-    val = nn(torch.tensor(get_features(observation)).to(device).double())
+def update(nn, optimizer, device, alpha, G, features):
+    val = nn(features)
     returns = torch.tensor([G]).to(device).double()
     optimizer.zero_grad()
     loss = F.mse_loss(val, returns)
@@ -85,7 +85,7 @@ def inplay_features(play_cards):
     deck = deck_reference()
     feature_vec = np.zeros(52)
     for card in play_cards:
-        feature_vec[deck[card]] = 1
+        feature_vec[deck[card['card']]] = 1
     return feature_vec
 
 def played_features(played_cards):
@@ -114,10 +114,11 @@ def get_score_feature(scores):
  in a list easily. 
 '''
 def get_features(observation, feature_list=['in_hand'], played_cards=None, won_cards=None, scores=None):
-    features = np.array([])
+    features = np.array([0])
 
     if 'in_hand' in feature_list:
-        np.concatenate(inhand_features(observation['data']['hand']))
+        hand = observation['data']['hand']
+        features = inhand_features(hand)
     if 'in_play' in feature_list:
         np.concatenate(features, inplay_features(observation['data']['currentTrick']))
     if 'played_cards' in feature_list:

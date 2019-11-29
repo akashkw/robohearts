@@ -2,11 +2,12 @@ import random
 import numpy as np
 from datetime import datetime
 import torch
+import copy
 
 from .agent_utils import *
-from .hand_approx import inhand_features, load_model, update
+from .hand_approx import *
 
-class MonteCarlo:
+class MonteCarloNN:
     def __init__(self, name, params=dict()):
         # Game Params
         self.name = name
@@ -28,20 +29,32 @@ class MonteCarlo:
 
         # fn approx items:
         self.FT_LIST = []
+        self.p_idx = []
+        self.scores = [0]*4
+        self.played_cards=[]
+        self.won_cards=[]
+        for i in range(4):
+            self.won_cards.append([])
+
         if params.get('in_hand', True):
             self.FT_LIST.append('in_hand')
-        if params.get('in_play', True):
+        if params.get('in_play', False):
             self.FT_LIST.append('in_play')
-        if params.get('played_cards', True):
+        if params.get('played_cards', False):
             self.FT_LIST.append('played_cards')
-        if params.get('cards_won', True):    
+        if params.get('cards_won', False):    
             self.FT_LIST.append('cards_won')
-        if params.get('scores', True):    
+        if params.get('scores', False):    
             self.FT_LIST.append('scores')
 
     def Do_Action(self, observation):
-        print("MC saw: " + str(observation['event_name']))
-        if observation['event_name'] == 'PassCards':
+
+        if observation['event_name'] == 'GameStart':
+            players = observation['data']['players']
+            for player in players:
+                self.p_idx.append(player['playerName'])
+
+        elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
             passCards = random.sample(observation['data']['hand'],3)
@@ -78,9 +91,31 @@ class MonteCarlo:
                     }
                 }
 
+        elif observation['event_name'] == 'NewRound':
+            players = observation['data']['players']
+            for i, player in enumerate(players):
+                self.scores[i] = player['score']
+
+        elif observation['event_name'] == 'ShowTrickEnd':
+            winner = self.p_idx.index(observation['data']['trickWinner'])
+            for card in observation['data']['cards']:
+                self.won_cards[winner].append(card)
+                self.played_cards.append(card)
+
+        elif observation['event_name'] == 'RoundEnd':
+            self.played_cards = []
+            self.won_cards = []
+            for i in range(4):
+                self.won_cards.append([])
+
     def update_weights(self, history, ret):
         for observation in reversed(history):
-            update(self.nn, self.optim, self.device, self.ALPHA, ret, observation)
+
+            ft = get_features(observation, feature_list=self.FT_LIST, 
+                played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
+            features = torch.tensor(ft).to(self.device)
+            print(features)
+            update(self.nn, self.optim, self.device, self.ALPHA, ret, features)
             ret *= self.GAMMA
         return
 
@@ -94,7 +129,10 @@ class MonteCarlo:
 
     # Return the value of a hand
     def value(self, observation):
-        features = torch.tensor(get_features(observation)).to(self.device)
+        ft = get_features(observation, feature_list=self.FT_LIST, 
+            played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
+
+        features = torch.tensor(ft).to(self.device)
         return self.nn(features).detach().item()
 
     # Perform a one-step lookahead and select the action that has the best expected value
