@@ -37,8 +37,8 @@ class MLPClassifier(torch.nn.Module):
         """
         return self.network(x)
 
-def update(nn, optimizer, alpha, G, hand, device):
-    val = nn(torch.tensor(inhand_features(hand)).to(device).double())
+def update(nn, optimizer, alpha, G, observation, device):
+    val = nn(torch.tensor(get_features(observation)).to(device).double())
     returns = torch.tensor([G]).to(device).double()
     optimizer.zero_grad()
     loss = F.mse_loss(val, returns)
@@ -113,8 +113,11 @@ def get_score_feature(scores):
  arrays we update at the end of tricks in the MC agent (ie MC keeps the state).  Scores just stored
  in a list easily. 
 '''
-def get_features(observation, feature_list=[], played_cards=None, won_cards=None, scores=None):
-    features = np.inhand_features()
+def get_features(observation, feature_list=['in_hand'], played_cards=None, won_cards=None, scores=None):
+    features = np.array([])
+
+    if 'in_hand' in feature_list:
+        np.concatenate(inhand_features(observation['data']['hand']))
     if 'in_play' in feature_list:
         np.concatenate(features, inplay_features(observation['data']['currentTrick']))
     if 'played_cards' in feature_list:
@@ -123,4 +126,5 @@ def get_features(observation, feature_list=[], played_cards=None, won_cards=None
         np.concatenate(features, won_features(won_cards))
     if 'scores' in feature_list:
         np.concatenate(features, get_score_feature(scores))
+
     return features
