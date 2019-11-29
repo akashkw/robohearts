@@ -108,13 +108,14 @@ class MonteCarloNN:
             for i in range(4):
                 self.won_cards.append([])
 
+
     def update_weights(self, history, ret):
-        for observation in reversed(history):
+        for observation, played_cards, won_cards in reversed(history):
 
             ft = get_features(observation, feature_list=self.FT_LIST, 
-                played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
+                played_cards=played_cards, won_cards=won_cards, scores=self.scores)
             features = torch.tensor(ft).to(self.device)
-            
+
             update(self.nn, self.optim, self.device, self.ALPHA, ret, features)
             ret *= self.GAMMA
         return
@@ -144,9 +145,10 @@ class MonteCarloNN:
         best_move, best_succ_val = None, float('-inf')
         for move, card in enumerate(valid_moves):
 
+            # set up observation for next state, after play
             succ_hand = [c for c in hand if c != card]
             obs_prime['data']['hand'] = succ_hand
-
+            obs_prime['data']['currentTrick'][0]['card'] = card
             succ_val = self.value(obs_prime)
             if succ_val > best_succ_val:
                 best_move, best_succ_val = move, succ_val
