@@ -114,7 +114,7 @@ class MonteCarloNN:
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
             features = torch.tensor(ft).to(self.device)
-            print(features)
+            
             update(self.nn, self.optim, self.device, self.ALPHA, ret, features)
             ret *= self.GAMMA
         return
