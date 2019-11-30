@@ -140,7 +140,9 @@ class MonteCarloNN:
     def greedy_action(self, observation):
         hand = observation['data']['hand']
         obs_prime = copy.deepcopy(observation)
-
+        # place holder
+        obs_prime['data']['currentTrick'].append({'playerName':self.name, 'card': '2c'})
+        idx_player = len(obs_prime['data']['currentTrick']) - 1
         valid_moves = filter_valid_moves(observation)
         best_move, best_succ_val = None, float('-inf')
         for move, card in enumerate(valid_moves):
@@ -148,7 +150,8 @@ class MonteCarloNN:
             # set up observation for next state, after play
             succ_hand = [c for c in hand if c != card]
             obs_prime['data']['hand'] = succ_hand
-            obs_prime['data']['currentTrick'][0]['card'] = card
+            # print(obs_prime['data']['currentTrick'])
+            obs_prime['data']['currentTrick'][idx_player]['card'] = card
             succ_val = self.value(obs_prime)
             if succ_val > best_succ_val:
                 best_move, best_succ_val = move, succ_val
