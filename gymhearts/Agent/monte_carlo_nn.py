@@ -5,7 +5,6 @@ import torch
 import copy
 
 from .agent_utils import *
-from .hand_approx import *
 
 class MonteCarloNN:
     def __init__(self, name, params=dict()):
@@ -36,7 +35,7 @@ class MonteCarloNN:
         path = params.get('nn_path', '')
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         if path:
-            self.nn = load_model(path).double().to(self.device)
+            self.nn = load_model(path).to(self.device)
         else:
             self.nn = MLPClassifier(n_input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
 
