@@ -16,7 +16,7 @@ class MonteCarloNN:
         # Agent Params
         self.EPSILON = params.get('epsilon', .05)
         self.GAMMA = params.get('gamma', .95)
-        self.ALPHA = params.get('alpha', .1)
+        self.ALPHA = params.get('alpha', 1e-3)
 
         # NN params
         path = params.get('nn_path', '')
@@ -24,39 +24,29 @@ class MonteCarloNN:
         self.nn = load_model(path).double().to(self.device)
 
         # optimizer params
-        lr = params.get('lr', 1e-3)
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=lr)
+        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
 
         # fn approx items:
-        self.FT_LIST = []
-        self.p_idx = []
-        self.scores = [0]*4
+        # in_hand, in_play, played_cards, cards_won, scores
+        self.FT_LIST = params.get('feature_list', ['in_hand'])
+        # List of player names
+        self.players = []
+        # Scores of each player
+        self.scores = [0 for i in range(4)]
         self.played_cards=[]
-        self.won_cards=[]
-        for i in range(4):
-            self.won_cards.append([])
-
-        if params.get('in_hand', True):
-            self.FT_LIST.append('in_hand')
-        if params.get('in_play', False):
-            self.FT_LIST.append('in_play')
-        if params.get('played_cards', False):
-            self.FT_LIST.append('played_cards')
-        if params.get('cards_won', False):    
-            self.FT_LIST.append('cards_won')
-        if params.get('scores', False):    
-            self.FT_LIST.append('scores')
+        # Keeps track of the cards won by each of the four players
+        self.won_cards=[list() for i in range(4)]
 
     def Do_Action(self, observation):
 
         if observation['event_name'] == 'GameStart':
-            players = observation['data']['players']
-            for player in players:
-                self.p_idx.append(player['playerName'])
+            # Create a list of player names
+            self.players = [entry['playerName'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
+            # Randomly choose a card to pass
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
@@ -92,21 +82,20 @@ class MonteCarloNN:
                 }
 
         elif observation['event_name'] == 'NewRound':
-            players = observation['data']['players']
-            for i, player in enumerate(players):
-                self.scores[i] = player['score']
+            # Init scores for all players
+            self.scores = [entry['score'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'ShowTrickEnd':
-            winner = self.p_idx.index(observation['data']['trickWinner'])
+            # Record the cards won in a trick, add to played_cards history
+            winner = self.players.index(observation['data']['trickWinner'])
             for card in observation['data']['cards']:
                 self.won_cards[winner].append(card)
                 self.played_cards.append(card)
 
         elif observation['event_name'] == 'RoundEnd':
+            # Reset for the next round
             self.played_cards = []
-            self.won_cards = []
-            for i in range(4):
-                self.won_cards.append([])
+            self.won_cards = [list() for i in range(4)]
 
 
     def update_weights(self, history, ret):
