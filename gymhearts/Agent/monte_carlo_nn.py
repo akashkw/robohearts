@@ -12,6 +12,8 @@ class MonteCarloNN:
         # Game Params
         self.name = name
         self.print_info = params.get('print_info', False)
+        self.log = params.get('log', False)
+        self.log_dir = params.get('log_dir', '/content/robohearts/log')
 
         # Agent Params
         self.EPSILON = params.get('epsilon', .05)
@@ -21,7 +23,10 @@ class MonteCarloNN:
         # NN params
         path = params.get('nn_path', '')
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.nn = load_model(path).double().to(self.device)
+        if path:
+            self.nn = load_model(path).double().to(self.device)
+        else:
+            self.nn = MLPClassifier(log=self.log)
 
         # optimizer params
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)

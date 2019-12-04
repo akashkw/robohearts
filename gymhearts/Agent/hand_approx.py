@@ -7,7 +7,7 @@ from os import path
 
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False):
+    def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False, log_dir='./log'):
         super().__init__()
 
         if n_layers != 2:
@@ -20,8 +20,7 @@ class MLPClassifier(torch.nn.Module):
             torch.nn.Linear(hidden_nodes, 1),
         )
 
-        LOG_DIR = '/content/robohearts/log'
-        self.logger = tb.SummaryWriter(path.join(LOG_DIR, 'train'), flush_secs=1)
+        self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
         self.log = log
         self.global_step = 0
 
