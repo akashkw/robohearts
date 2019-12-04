@@ -27,7 +27,7 @@ class MonteCarloNN:
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
 
         # fn approx items:
-        # in_hand, in_play, played_cards, cards_won, scores
+        # in_hand, in_play, played_cards, won_cards, scores
         self.FT_LIST = params.get('feature_list', ['in_hand'])
         # List of player names
         self.players = []
@@ -105,7 +105,7 @@ class MonteCarloNN:
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
             features = torch.tensor(ft).to(self.device)
 
-            update(self.nn, self.optim, self.device, self.ALPHA, ret, features)
+            update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
         return
 

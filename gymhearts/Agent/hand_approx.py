@@ -10,9 +10,6 @@ class MLPClassifier(torch.nn.Module):
     def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False):
         super().__init__()
 
-        """
-        Your code here
-        """
         if n_layers != 2:
             print("More or less than 2 layers is not supported, so using 2")
 
@@ -29,20 +26,14 @@ class MLPClassifier(torch.nn.Module):
         self.global_step = 0
 
     def forward(self, x):
-        """
-        Your code here
-
-        @x: torch.Tensor((B, n_input_features))
-        @return: torch.Tensor((B, 1))
-        """
         return self.network(x)
 
-def update(nn, optimizer, device, alpha, G, features):
+def update(nn, optimizer, device, G, features):
     val = nn(features)
-    returns = torch.tensor([G]).to(device).double()
+    ret = torch.tensor([G]).to(device).double()
     optimizer.zero_grad()
-    loss = F.mse_loss(val, returns)
-    (alpha * .5 * loss).backward()
+    loss = F.mse_loss(val, ret)
+    loss.backward()
     optimizer.step()
 
     if nn.log and nn.global_step % 1000 == 0:
@@ -75,37 +66,32 @@ def load_model(model):
 
 
 #-------------- FEATURE CALCULATIONS --------------
-def inhand_features(hand):
+def cards_to_bin_features(cards):
     deck = deck_reference()
     feature_vec = np.zeros(52)
     for card in hand:
         feature_vec[deck[card]] = 1
     return feature_vec 
 
-def inplay_features(play_cards):
-    deck = deck_reference()
-    feature_vec = np.zeros(52)
-    for card in play_cards:
-        feature_vec[deck[card['card']]] = 1
-    return feature_vec
+def in_hand_features(observation):
+    return cards_to_bin_features(observation['data']['hand'])
 
-def played_features(played_cards):
-    deck = deck_reference()
-    feature_vec = np.zeros(52)
-    for card in played_cards:
-        feature_vec[deck[card]] = 1
-    return feature_vec
+def in_play_features(play_cards):
+    return cards_to_bin_features(observation['data']['currentTrick'])
 
-def won_features(player_won):
-    winnable_pts = pts_reference()
+def played_cards_features(played_cards):
+    return cards_to_bin_features(played_cards)
+
+def won_cards_features(won_cards):
+    point_cards = pts_reference()
     feature_vec = np.zeros((4, 14))
-    for i, player_cards_won in enumerate(player_won):
-        for card in player_cards_won:
-            if card in winnable_pts:
-                feature_vec[i][winnable_pts[card]] = 1
+    for player, won_card in enumerate(won_cards):
+        for card in won_card:
+            if card in point_cards:
+                feature_vec[player][point_cards[card]] = 1
     return feature_vec.flatten()
 
-def get_score_feature(scores):
+def scores_features(scores):
     return np.array(scores)
 
 '''
@@ -119,19 +105,14 @@ def get_features(observation, feature_list=['in_hand'], played_cards=None, won_c
     features = np.array([0])
 
     if 'in_hand' in feature_list:
-        hand = observation['data']['hand']
-        features = inhand_features(hand)
+        features = np.concatenate([features, in_hand_features(observation)])
     if 'in_play' in feature_list:
-        temp = inplay_features(observation['data']['currentTrick'])
-        features = np.concatenate([features, temp])
+        features = np.concatenate([features, in_play_features(observation)])
     if 'played_cards' in feature_list:
-        temp = played_features(played_cards)
-        features = np.concatenate([features, temp])
-    if 'cards_won' in feature_list:
-        temp = won_features(won_cards)
-        features = np.concatenate([features, temp])
+        features = np.concatenate([features, played_cards_features(played_cards)])
+    if 'won_cards' in feature_list:
+        features = np.concatenate([features, won_cards_features(won_cards)])
     if 'scores' in feature_list:
-        temp = won_features(won_cards)
-        features = np.concatenate([features, temp])
+        features = np.concatenate([features, scores_features(scores)])
 
     return features
