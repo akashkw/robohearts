@@ -101,7 +101,8 @@ def won_features(player_won):
     feature_vec = np.zeros((4, 14))
     for i, player_cards_won in enumerate(player_won):
         for card in player_cards_won:
-            feature_vec[i][winnable_pts[card]] = 1
+            if card in winnable_pts:
+                feature_vec[i][winnable_pts[card]] = 1
     return feature_vec.flatten()
 
 def get_score_feature(scores):
