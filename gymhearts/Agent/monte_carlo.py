@@ -91,6 +91,6 @@ class MonteCarlo:
         for move, card in enumerate(valid_moves):
             succ_hand = [c for c in hand if c != card]
             succ_val = self.value(succ_hand)
-            if succ_val > best_succ_val:
+            if succ_val >= best_succ_val:
                 best_move, best_succ_val = move, succ_val
         return best_move
