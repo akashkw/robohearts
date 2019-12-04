@@ -17,8 +17,8 @@ def create_points():
     pts = list()
     for rank in ranks:
         suit = 'h'
-        deck.append(f'{rank}{suit}')
-    deck.append('Qs')
+        pts.append(f'{rank}{suit}')
+    pts.append('Qs')
     return pts
 
 # Reference to get index for each card
