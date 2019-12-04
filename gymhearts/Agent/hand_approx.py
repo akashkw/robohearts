@@ -20,8 +20,9 @@ class MLPClassifier(torch.nn.Module):
             torch.nn.Linear(hidden_nodes, 1),
         )
 
-        self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
         self.log = log
+        if self.log:
+            self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
         self.global_step = 0
 
     def forward(self, x):
@@ -68,15 +69,16 @@ def load_model(model):
 def cards_to_bin_features(cards):
     deck = deck_reference()
     feature_vec = np.zeros(52)
-    for card in hand:
+    for card in cards:
         feature_vec[deck[card]] = 1
     return feature_vec 
 
 def in_hand_features(observation):
     return cards_to_bin_features(observation['data']['hand'])
 
-def in_play_features(play_cards):
-    return cards_to_bin_features(observation['data']['currentTrick'])
+def in_play_features(observation):
+    in_play_cards = [entry['card'] for entry in observation['data']['currentTrick']]
+    return cards_to_bin_features(in_play_cards)
 
 def played_cards_features(played_cards):
     return cards_to_bin_features(played_cards)
