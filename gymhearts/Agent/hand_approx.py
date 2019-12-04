@@ -30,7 +30,7 @@ class MLPClassifier(torch.nn.Module):
 
 def update(nn, optimizer, device, G, features):
     val = nn(features)
-    ret = torch.tensor([G]).to(device).double()
+    ret = torch.tensor([G]).to(device).float()
     optimizer.zero_grad()
     loss = F.mse_loss(val, ret)
     loss.backward()
@@ -103,7 +103,7 @@ def scores_features(scores):
  in a list easily. 
 '''
 def get_features(observation, feature_list=['in_hand'], played_cards=None, won_cards=None, scores=None):
-    features = np.array([0])
+    features = np.array([])
 
     if 'in_hand' in feature_list:
         features = np.concatenate([features, in_hand_features(observation)])
@@ -115,5 +115,4 @@ def get_features(observation, feature_list=['in_hand'], played_cards=None, won_c
         features = np.concatenate([features, won_cards_features(won_cards)])
     if 'scores' in feature_list:
         features = np.concatenate([features, scores_features(scores)])
-
     return features

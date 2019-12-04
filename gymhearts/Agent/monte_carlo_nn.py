@@ -20,18 +20,8 @@ class MonteCarloNN:
         self.GAMMA = params.get('gamma', .95)
         self.ALPHA = params.get('alpha', 1e-3)
 
-        # NN params
-        path = params.get('nn_path', '')
-        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        if path:
-            self.nn = load_model(path).double().to(self.device)
-        else:
-            self.nn = MLPClassifier(log=self.log).to(self.device)
-
-        # optimizer params
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
-
         # fn approx items:
+
         # in_hand, in_play, played_cards, won_cards, scores
         self.FT_LIST = params.get('feature_list', ['in_hand'])
         # List of player names
@@ -41,6 +31,17 @@ class MonteCarloNN:
         self.played_cards=[]
         # Keeps track of the cards won by each of the four players
         self.won_cards=[list() for i in range(4)]
+
+        # NN params
+        path = params.get('nn_path', '')
+        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        if path:
+            self.nn = load_model(path).double().to(self.device)
+        else:
+            self.nn = MLPClassifier(n_input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
+
+        # optimizer params
+        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
 
     def Do_Action(self, observation):
 
@@ -108,7 +109,7 @@ class MonteCarloNN:
 
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
-            features = torch.tensor(ft).to(self.device)
+            features = torch.tensor(ft).to(self.device).float()
 
             update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
@@ -126,8 +127,7 @@ class MonteCarloNN:
     def value(self, observation):
         ft = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
-
-        features = torch.tensor(ft).to(self.device)
+        features = torch.tensor(ft).to(self.device).float()
         return self.nn(features).detach().item()
 
     # Perform a one-step lookahead and select the action that has the best expected value

@@ -31,6 +31,21 @@ def pts_reference():
     pts = create_points()
     return {card : i for i, card in enumerate(pts)}
 
+# Return the number of features associated with each feature group
+def feature_length(feature_list):
+    count = 0
+    if 'in_hand' in feature_list:
+        count += 52
+    if 'in_play' in feature_list:
+        count += 52
+    if 'played_cards' in feature_list:
+        count += 52
+    if 'won_cards' in feature_list:
+        count += 4 * 14
+    if 'scores' in feature_list:
+        count += 4
+    return count
+
 # Format cards from Hearts.Card format to pretty format
 def pretty_card(card):
     rank = card[0].upper() if card[0] != 'T' else '10'
