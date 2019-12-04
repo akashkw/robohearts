@@ -7,7 +7,7 @@ from os import path
 
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=104, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False):
+    def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False):
         super().__init__()
 
         """
@@ -98,10 +98,11 @@ def played_features(played_cards):
 
 def won_features(player_won):
     winnable_pts = pts_reference()
-    feature_vec = np.zeros(4, 13)
+    feature_vec = np.zeros((4, 14))
     for i, player_cards_won in enumerate(player_won):
         for card in player_cards_won:
-            feature_vec[i][winnable_pts[card]] = 1
+            if card in winnable_pts:
+                feature_vec[i][winnable_pts[card]] = 1
     return feature_vec.flatten()
 
 def get_score_feature(scores):
@@ -124,7 +125,7 @@ def get_features(observation, feature_list=['in_hand'], played_cards=None, won_c
         temp = inplay_features(observation['data']['currentTrick'])
         features = np.concatenate([features, temp])
     if 'played_cards' in feature_list:
-        temp = played_features(play_cards)
+        temp = played_features(played_cards)
         features = np.concatenate([features, temp])
     if 'cards_won' in feature_list:
         temp = won_features(won_cards)
