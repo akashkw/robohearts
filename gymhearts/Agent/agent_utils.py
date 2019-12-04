@@ -127,7 +127,7 @@ def handle_event(observation):
 # --------------FUNCTION APPROX-------------------
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False, log_dir='./log'):
+    def __init__(self, input_features=104, hidden_nodes=256, output_features=1, layers=2, log=False, log_dir='./log'):
         super().__init__()
 
         if n_layers != 2:
@@ -135,9 +135,9 @@ class MLPClassifier(torch.nn.Module):
 
 
         self.network = torch.nn.Sequential(
-            torch.nn.Linear(n_input_features, hidden_nodes),
+            torch.nn.Linear(input_features, hidden_nodes),
             torch.nn.ReLU(),
-            torch.nn.Linear(hidden_nodes, 1),
+            torch.nn.Linear(hidden_nodes, output_features),
         )
 
         self.log = log

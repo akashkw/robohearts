@@ -37,7 +37,7 @@ class MonteCarloNN:
         if path:
             self.nn = load_model(path).to(self.device)
         else:
-            self.nn = MLPClassifier(n_input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
+            self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
 
         # optimizer params
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
