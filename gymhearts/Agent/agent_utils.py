@@ -127,10 +127,10 @@ def handle_event(observation):
 # --------------FUNCTION APPROX-------------------
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, input_features=104, hidden_nodes=256, output_features=1, layers=2, log=False, log_dir='./log'):
+    def __init__(self, input_features, hidden_nodes=256, output_features=1, layers=2, log=False, log_dir='./log'):
         super().__init__()
 
-        if n_layers != 2:
+        if layers != 2:
             print("More or less than 2 layers is not supported, so using 2")
 
 
