@@ -176,10 +176,10 @@ def save_model(model):
     raise ValueError("model type '%s' not supported!" % str(type(model)))
 
 
-def load_model(model):
+def load_model(model, feature_list):
     from torch import load
     from os import path
-    r = model_factory['mlp']()
+    r = model_factory['mlp'](input_features=feature_length(feature_list))
     if model is not '':
         print("loaded from " + str(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model)))
         r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))

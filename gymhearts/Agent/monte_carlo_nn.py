@@ -34,8 +34,10 @@ class MonteCarloNN:
         # NN params
         path = params.get('nn_path', '')
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        # Overwrite
+        self.device = torch.device('cpu')
         if path:
-            self.nn = load_model(path).to(self.device)
+            self.nn = load_model(path, self.FT_LIST).to(self.device)
         else:
             self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
 
