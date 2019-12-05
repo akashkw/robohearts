@@ -149,6 +149,7 @@ class MLPClassifier(torch.nn.Module):
         return self.network(x)
 
 def update(nn, optimizer, device, G, features):
+    nn.train()
     val = nn(features)
     ret = torch.tensor([G]).to(device).float()
     optimizer.zero_grad()

@@ -109,7 +109,6 @@ class MonteCarloNN:
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
             features = torch.tensor(ft).to(self.device).float()
-
             update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
         return
@@ -127,6 +126,7 @@ class MonteCarloNN:
         ft = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
         features = torch.tensor(ft).to(self.device).float()
+        self.nn.eval()
         return self.nn(features).detach().item()
 
     # Perform a one-step lookahead and select the action that has the best expected value
