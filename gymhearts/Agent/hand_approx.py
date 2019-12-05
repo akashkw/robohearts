@@ -1,10 +1,13 @@
 import torch
 import numpy as np
 import torch.nn.functional as F
-from agent_utils import *
+from .agent_utils import *
+import torch.utils.tensorboard as tb
+from os import path
+
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=52, hidden_nodes=256, n_output_Features=1, n_layers=2):
+    def __init__(self, n_input_features=108, hidden_nodes=256, n_output_Features=1, n_layers=2, log=False):
         super().__init__()
 
         """
@@ -13,11 +16,17 @@ class MLPClassifier(torch.nn.Module):
         if n_layers != 2:
             print("More or less than 2 layers is not supported, so using 2")
 
+
         self.network = torch.nn.Sequential(
             torch.nn.Linear(n_input_features, hidden_nodes),
             torch.nn.ReLU(),
             torch.nn.Linear(hidden_nodes, 1),
         )
+
+        LOG_DIR = '/content/robohearts/log'
+        self.logger = tb.SummaryWriter(path.join(LOG_DIR, 'train'), flush_secs=1)
+        self.log = log
+        self.global_step = 0
 
     def forward(self, x):
         """
@@ -28,12 +37,17 @@ class MLPClassifier(torch.nn.Module):
         """
         return self.network(x)
 
-def update(nn, optimizer, alpha, G, hand):
-    val = nn(torch.FloatTensor(inhand_features(hand)).to(nn.device))
-    returns = torch.tensor([G]).double().to(nn.device)
+def update(nn, optimizer, device, alpha, G, features):
+    val = nn(features)
+    returns = torch.tensor([G]).to(device).double()
     optimizer.zero_grad()
-    (alpha * .5 * F.mse_loss(val, returns)).backward()
+    loss = F.mse_loss(val, returns)
+    (alpha * .5 * loss).backward()
     optimizer.step()
+
+    if nn.log and nn.global_step % 1000 == 0:
+        nn.logger.add_scalar('loss', loss, nn.global_step)
+    nn.global_step += 1
 
 
 model_factory = {
@@ -54,11 +68,13 @@ def load_model(model):
     from torch import load
     from os import path
     r = model_factory['mlp']()
-    if model is not None:
+    if model is not '':
+        print("loaded from " + str(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model)))
         r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))
     return r
 
-# Return the features corresponding to a hand
+
+#-------------- FEATURE CALCULATIONS --------------
 def inhand_features(hand):
     deck = deck_reference()
     feature_vec = np.zeros(52)
@@ -66,11 +82,56 @@ def inhand_features(hand):
         feature_vec[deck[card]] = 1
     return feature_vec 
 
+def inplay_features(play_cards):
+    deck = deck_reference()
+    feature_vec = np.zeros(52)
+    for card in play_cards:
+        feature_vec[deck[card['card']]] = 1
+    return feature_vec
 
-# TODO:  Add function to build:
-# - Cards in play this trick -- 52 length vector, only up to 4 active
-# - Cards previously played in this round --- gives history of cards, 52 length vector
-# - hearts + q spade each player has won --- length 14 vector for each player, 56 length vector
-# - score for each player (may inform strategy?) -- 4 length vector
-# - function to append the approx for each one of these features (4 *52 + 4 + 4 for:
- #   cards in hand, cards played, hearts won by each player,  cards this trick, + Qs each player + score per player)
+def played_features(played_cards):
+    deck = deck_reference()
+    feature_vec = np.zeros(52)
+    for card in played_cards:
+        feature_vec[deck[card]] = 1
+    return feature_vec
+
+def won_features(player_won):
+    winnable_pts = pts_reference()
+    feature_vec = np.zeros((4, 14))
+    for i, player_cards_won in enumerate(player_won):
+        for card in player_cards_won:
+            if card in winnable_pts:
+                feature_vec[i][winnable_pts[card]] = 1
+    return feature_vec.flatten()
+
+def get_score_feature(scores):
+    return np.array(scores)
+
+'''
+ Need data for feature construction - played cards and won cards can be built from TrickEnd event
+ in the primary program driver (note, played_cards could be a list, won_cards could be list of lists
+ or a dictionary (lists of lists/2d array seems easier).  Probably cleanest sol is both are np
+ arrays we update at the end of tricks in the MC agent (ie MC keeps the state).  Scores just stored
+ in a list easily. 
+'''
+def get_features(observation, feature_list=['in_hand'], played_cards=None, won_cards=None, scores=None):
+    features = np.array([0])
+
+    if 'in_hand' in feature_list:
+        hand = observation['data']['hand']
+        features = inhand_features(hand)
+    if 'in_play' in feature_list:
+        temp = inplay_features(observation['data']['currentTrick'])
+        features = np.concatenate([features, temp])
+    if 'played_cards' in feature_list:
+        temp = played_features(played_cards)
+        features = np.concatenate([features, temp])
+    if 'cards_won' in feature_list:
+        temp = won_features(won_cards)
+        features = np.concatenate([features, temp])
+    if 'scores' in feature_list:
+        temp = won_features(won_cards)
+        features = np.concatenate([features, temp])
+
+    return features

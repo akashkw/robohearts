@@ -4,7 +4,7 @@ from datetime import datetime
 import torch
 
 from .agent_utils import *
-from .hand_approx import inhand_features, load_model, update
+from .hand_approx import inhand_features
 
 class MonteCarlo:
     def __init__(self, name, params=dict()):
@@ -19,15 +19,6 @@ class MonteCarlo:
 
         # Value function params
         self.weight_vec = params.get('weight_vec', np.zeros(52))
-        self.nn = params.get('nn_path', None)
-        self.optim = None
-        self.deck_reference = deck_reference()
-
-        if self.nn is not None:
-            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-            self.nn = load_model(self.nn).double()
-            self.nn = self.nn.to(device)
-            self.optim = torch.optim.Adam(self.nn.parameters())
 
 
     def Do_Action(self, observation):
@@ -72,16 +63,12 @@ class MonteCarlo:
         errors = []
         for observation in reversed(history):
             hand = observation['data']['hand']
-
-            if self.nn is not None:
-                update(self.nn, self.optim, self.ALPHA, ret, hand)
-            else:
-                value = self.value(hand)
-                error = ret - value
-                features = inhand_features(hand)
-                self.weight_vec += self.ALPHA * error * features
-                ret *= self.GAMMA
-                errors.append(error)
+            value = self.value(hand)
+            error = ret - value
+            features = inhand_features(hand)
+            self.weight_vec += self.ALPHA * error * features
+            ret *= self.GAMMA
+            errors.append(error)
         return errors
 
     # Select an action using epsilon-greedy action selection
@@ -94,10 +81,7 @@ class MonteCarlo:
 
     # Return the value of a hand
     def value(self, hand):
-        value_vec = inhand_features(hand) * self.weight_vec
-        if self.nn is not None:
-            return self.nn(torch.tensor(inhand_features(hand)).to(self.nn.device)).detach().item()
-        return value_vec.sum()
+        return np.dot(inhand_features(hand), self.weight_vec)
 
     # Perform a one-step lookahead and select the action that has the best expected value
     def greedy_action(self, observation):

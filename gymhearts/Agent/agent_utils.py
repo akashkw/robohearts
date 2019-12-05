@@ -13,10 +13,23 @@ def create_deck():
             deck.append(f'{rank}{suit}')
     return deck
 
+def create_points():
+    pts = list()
+    for rank in ranks:
+        suit = 'h'
+        pts.append(f'{rank}{suit}')
+    pts.append('Qs')
+    return pts
+
 # Reference to get index for each card
 def deck_reference():
     deck = create_deck()
     return {card : i for i, card in enumerate(deck)}
+
+# Reference to get index for each point bearing card
+def pts_reference():
+    pts = create_points()
+    return {card : i for i, card in enumerate(pts)}
 
 # Format cards from Hearts.Card format to pretty format
 def pretty_card(card):
