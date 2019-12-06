@@ -127,23 +127,27 @@ def handle_event(observation):
 # --------------FUNCTION APPROX-------------------
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, input_features, hidden_nodes=256, output_features=1, layers=2, log=False, log_dir='./log'):
+    def __init__(self, input_features, output_features=1, layers=None, log=False, log_dir='./log'):
         super().__init__()
+        if not layers:
+            layers = [input_features * 2, input_features * 4]
 
-        if layers != 2:
-            print("More or less than 2 layers is not supported, so using 2")
+        L = []
+        c = input_features
+        for l in layers:
+            L.append(torch.nn.Linear(c, l))
+            L.append(torch.nn.RelU())
+            c = l
+        L.append(torch.nn.Linear(c, output_features))
 
+        self.network = torch.nn.Sequential(*L)
 
-        self.network = torch.nn.Sequential(
-            torch.nn.Linear(input_features, hidden_nodes),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_nodes, output_features),
-        )
+        self.global_step = 0
 
         self.log = log
         if self.log:
             self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
-        self.global_step = 0
+
 
     def forward(self, x):
         return self.network(x)
