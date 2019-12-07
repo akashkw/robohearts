@@ -16,13 +16,12 @@ class PiApproximationWithNN():
         alpha: learning rate
         """
         # TODO: implement here
-        self.nn = MLPClassifier(n_input_features=state_dims, n_output_features=num_actions, softmax=False)
+        self.nn = MLPClassifier(input_features=state_dims, output_features=num_actions)
         if saved is not None:
             self.nn.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'pi.th'), map_location='cpu'))
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha)
 
     def __call__(self,s, valid_filter) -> int:
-        # WRITE VALID_FILTER, MASK INVALID CARDS FROM SAMPLE
         # Sample an action according to the policy
         logits = self.nn(torch.FloatTensor(s))
         logit_fiter = logits * valid_filter
@@ -64,39 +63,30 @@ class Baseline(object):
         pass
 
 class MLPClassifier(torch.nn.Module):
-    def __init__(self, n_input_features=52, n_output_features=1, n_hidden=256, softmax=False):
+    def __init__(self, input_features, output_features=1, layers=None, log=False, log_dir='./log'):
         super().__init__()
+        if not layers:
+            layers = [input_features * 2, input_features * 4]
 
-        """
-        Your code here
-        """
-        if softmax:       
-            self.network = torch.nn.Sequential(
-                torch.nn.Linear(n_input_features, n_hidden),
-                torch.nn.ReLU(),
-                torch.nn.Linear(n_hidden, n_hidden),
-                torch.nn.ReLU(),
-                torch.nn.Linear(n_hidden, n_output_features),
-                torch.nn.Softmax(dim=0),
-            )
-        else:
-            self.network = torch.nn.Sequential(
-                torch.nn.Linear(n_input_features, n_hidden),
-                torch.nn.ReLU(),
-                torch.nn.Linear(n_hidden, n_hidden),
-                torch.nn.ReLU(),
-                torch.nn.Linear(n_hidden, n_output_features),
-            )
+        L = []
+        c = input_features
+        for l in layers:
+            L.append(torch.nn.Linear(c, l))
+            L.append(torch.nn.ReLU())
+            c = l
+        L.append(torch.nn.Linear(c, output_features))
+
+        self.network = torch.nn.Sequential(*L)
+
+        self.global_step = 0
+
+        self.log = log
+        if self.log:
+            self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
+
 
     def forward(self, x):
-        """
-        Your code here
-
-        @x: torch.Tensor((B, n_input_features))
-        @return: torch.Tensor((B, 1))
-        """
-        out = self.network(x)
-        return out
+        return self.network(x)
 
 class VApproximationWithNN(Baseline):
     def __init__(self,
