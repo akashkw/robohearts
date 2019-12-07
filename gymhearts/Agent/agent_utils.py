@@ -171,12 +171,15 @@ model_factory = {
 }
 
 
-def save_model(model):
+def save_model(model, path=None):
     from torch import save
     from os import path
     for n, m in model_factory.items():
         if isinstance(model, m):
-            return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), '%s.th' % n))
+            if path:
+                return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), '%s.th' % path))
+            else:
+                return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), '%s.th' % n))
     raise ValueError("model type '%s' not supported!" % str(type(model)))
 
 
