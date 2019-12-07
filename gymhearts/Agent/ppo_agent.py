@@ -5,7 +5,6 @@ import torch
 import copy
 
 from .agent_utils import *
-from .hand_approx import *
 from .reinforce import *
 
 class PPO_Agent:
@@ -29,24 +28,15 @@ class PPO_Agent:
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
 
         # fn approx items:
-        self.FT_LIST = []
+        self.FT_LIST = params.get('feature_list', ['in_hand'])
         self.p_idx = []
-        self.scores = [0]*4
+        self.players = []
+        # Scores of each player
+        self.scores = [0 for i in range(4)]
         self.played_cards=[]
-        self.won_cards=[]
-        for i in range(4):
-            self.won_cards.append([])
+        # Keeps track of the cards won by each of the four players
+        self.won_cards=[list() for i in range(4)]
 
-        if params.get('in_hand', True):
-            self.FT_LIST.append('in_hand')
-        if params.get('in_play', False):
-            self.FT_LIST.append('in_play')
-        if params.get('played_cards', False):
-            self.FT_LIST.append('played_cards')
-        if params.get('cards_won', False):    
-            self.FT_LIST.append('cards_won')
-        if params.get('scores', False):    
-            self.FT_LIST.append('scores')
 
     def Do_Action(self, observation):
 
@@ -109,7 +99,7 @@ class PPO_Agent:
             for i in range(4):
                 self.won_cards.append([])
 
-    def update_weights(self, episode_info):
+    def update_weights(self, batch_info):
         G = 0
         for i, result in enumerate(reversed(episode_info)):
             t = len(episode_info) - i - 1

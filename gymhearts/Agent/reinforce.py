@@ -122,7 +122,7 @@ class VApproximationWithNN(Baseline):
         (.5 * F.mse_loss(val, returns)).backward()
         self.optimizer.step()
 
-    def save_pi_model():
+    def save_base_model():
         from torch import save
         from os import path
         return save(self.nn.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'baseline.th'))
