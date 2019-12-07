@@ -5,58 +5,55 @@ import torch
 import copy
 
 from .agent_utils import *
-from .hand_approx import *
 
 class MonteCarloNN:
     def __init__(self, name, params=dict()):
         # Game Params
         self.name = name
         self.print_info = params.get('print_info', False)
+        self.log = params.get('log', False)
+        self.log_dir = params.get('log_dir', '/content/robohearts/log')
 
         # Agent Params
         self.EPSILON = params.get('epsilon', .05)
         self.GAMMA = params.get('gamma', .95)
-        self.ALPHA = params.get('alpha', .1)
+        self.ALPHA = params.get('alpha', 1e-3)
+
+        # fn approx items:
+
+        # in_hand, in_play, played_cards, won_cards, scores
+        self.FT_LIST = params.get('feature_list', ['in_hand'])
+        # List of player names
+        self.players = []
+        # Scores of each player
+        self.scores = [0 for i in range(4)]
+        self.played_cards=[]
+        # Keeps track of the cards won by each of the four players
+        self.won_cards=[list() for i in range(4)]
 
         # NN params
         path = params.get('nn_path', '')
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.nn = load_model(path).double().to(self.device)
+        # Overwrite
+        self.device = torch.device('cpu')
+        if path:
+            self.nn = load_model(path, self.FT_LIST).to(self.device)
+        else:
+            self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
 
         # optimizer params
-        lr = params.get('lr', 1e-3)
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=lr)
-
-        # fn approx items:
-        self.FT_LIST = []
-        self.p_idx = []
-        self.scores = [0]*4
-        self.played_cards=[]
-        self.won_cards=[]
-        for i in range(4):
-            self.won_cards.append([])
-
-        if params.get('in_hand', True):
-            self.FT_LIST.append('in_hand')
-        if params.get('in_play', False):
-            self.FT_LIST.append('in_play')
-        if params.get('played_cards', False):
-            self.FT_LIST.append('played_cards')
-        if params.get('cards_won', False):    
-            self.FT_LIST.append('cards_won')
-        if params.get('scores', False):    
-            self.FT_LIST.append('scores')
+        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
 
     def Do_Action(self, observation):
 
         if observation['event_name'] == 'GameStart':
-            players = observation['data']['players']
-            for player in players:
-                self.p_idx.append(player['playerName'])
+            # Create a list of player names
+            self.players = [entry['playerName'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
+            # Randomly choose a card to pass
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
@@ -92,21 +89,20 @@ class MonteCarloNN:
                 }
 
         elif observation['event_name'] == 'NewRound':
-            players = observation['data']['players']
-            for i, player in enumerate(players):
-                self.scores[i] = player['score']
+            # Init scores for all players
+            self.scores = [entry['score'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'ShowTrickEnd':
-            winner = self.p_idx.index(observation['data']['trickWinner'])
+            # Record the cards won in a trick, add to played_cards history
+            winner = self.players.index(observation['data']['trickWinner'])
             for card in observation['data']['cards']:
                 self.won_cards[winner].append(card)
                 self.played_cards.append(card)
 
         elif observation['event_name'] == 'RoundEnd':
+            # Reset for the next round
             self.played_cards = []
-            self.won_cards = []
-            for i in range(4):
-                self.won_cards.append([])
+            self.won_cards = [list() for i in range(4)]
 
 
     def update_weights(self, history, ret):
@@ -114,9 +110,8 @@ class MonteCarloNN:
 
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
-            features = torch.tensor(ft).to(self.device)
-
-            update(self.nn, self.optim, self.device, self.ALPHA, ret, features)
+            features = torch.tensor(ft).to(self.device).float()
+            update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
         return
 
@@ -132,27 +127,22 @@ class MonteCarloNN:
     def value(self, observation):
         ft = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
-
-        features = torch.tensor(ft).to(self.device)
+        features = torch.tensor(ft).to(self.device).float()
+        self.nn.eval()
         return self.nn(features).detach().item()
 
     # Perform a one-step lookahead and select the action that has the best expected value
     def greedy_action(self, observation):
         hand = observation['data']['hand']
-        obs_prime = copy.deepcopy(observation)
-        # place holder
-        obs_prime['data']['currentTrick'].append({'playerName':self.name, 'card': '2c'})
-        idx_player = len(obs_prime['data']['currentTrick']) - 1
         valid_moves = filter_valid_moves(observation)
         best_move, best_succ_val = None, float('-inf')
         for move, card in enumerate(valid_moves):
-
             # set up observation for next state, after play
             succ_hand = [c for c in hand if c != card]
+            obs_prime = copy.deepcopy(observation)
             obs_prime['data']['hand'] = succ_hand
-            # print(obs_prime['data']['currentTrick'])
-            obs_prime['data']['currentTrick'][idx_player]['card'] = card
+            obs_prime['data']['currentTrick'].append({'playerName' : self.name, 'card' : card})
             succ_val = self.value(obs_prime)
-            if succ_val > best_succ_val:
+            if succ_val >= best_succ_val:
                 best_move, best_succ_val = move, succ_val
         return best_move

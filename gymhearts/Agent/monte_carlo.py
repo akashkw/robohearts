@@ -4,7 +4,6 @@ from datetime import datetime
 import torch
 
 from .agent_utils import *
-from .hand_approx import inhand_features
 
 class MonteCarlo:
     def __init__(self, name, params=dict()):
@@ -25,6 +24,7 @@ class MonteCarlo:
         if observation['event_name'] == 'PassCards':
             if self.print_info:
                 print(handle_event(observation))
+            # Randomly choose a card to pass
             passCards = random.sample(observation['data']['hand'],3)
             
             if self.print_info:
@@ -65,7 +65,7 @@ class MonteCarlo:
             hand = observation['data']['hand']
             value = self.value(hand)
             error = ret - value
-            features = inhand_features(hand)
+            features = in_hand_features(hand)
             self.weight_vec += self.ALPHA * error * features
             ret *= self.GAMMA
             errors.append(error)
@@ -81,7 +81,7 @@ class MonteCarlo:
 
     # Return the value of a hand
     def value(self, hand):
-        return np.dot(inhand_features(hand), self.weight_vec)
+        return np.dot(in_hand_features(hand), self.weight_vec)
 
     # Perform a one-step lookahead and select the action that has the best expected value
     def greedy_action(self, observation):
@@ -91,6 +91,6 @@ class MonteCarlo:
         for move, card in enumerate(valid_moves):
             succ_hand = [c for c in hand if c != card]
             succ_val = self.value(succ_hand)
-            if succ_val > best_succ_val:
+            if succ_val >= best_succ_val:
                 best_move, best_succ_val = move, succ_val
         return best_move
