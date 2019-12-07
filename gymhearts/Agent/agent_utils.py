@@ -136,7 +136,7 @@ class MLPClassifier(torch.nn.Module):
         c = input_features
         for l in layers:
             L.append(torch.nn.Linear(c, l))
-            L.append(torch.nn.RelU())
+            L.append(torch.nn.ReLU())
             c = l
         L.append(torch.nn.Linear(c, output_features))
 
