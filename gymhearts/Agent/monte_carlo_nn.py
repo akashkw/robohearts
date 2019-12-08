@@ -36,11 +36,14 @@ class MonteCarloNN:
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         # Overwrite -> comment out if not needed
         self.device = torch.device('cpu')
-        
+
+        # Layers of the Neural Network
+        self.layers = params.get('layers', [feature_length(self.FT_LIST)*2, feature_length(self.FT_LIST)*4])
+
         if model_name:
             self.nn = load_model(model_name, self.FT_LIST).to(self.device)
         else:
-            self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), log=self.log).to(self.device)
+            self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), layers=self.layers, log=self.log).to(self.device)
 
         # optimizer params
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)

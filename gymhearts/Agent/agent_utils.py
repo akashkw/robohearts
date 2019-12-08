@@ -170,8 +170,7 @@ def update(nn, optimizer, device, G, features):
 def save_model(model, model_name):
     from torch import save
     from os import path
-        return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{filename}.th'))
-    raise ValueError("model type '%s' not supported!" % str(type(model)))
+    return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'))
 
 def load_model(model, feature_list):
     from torch import load
