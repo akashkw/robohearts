@@ -17,9 +17,6 @@ class PPO_Agent:
         self.GAMMA = params.get('gamma', .95)
         self.ALPHA = params.get('alpha', 3e-4)
 
-        # optimizer params
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA)
-
         # fn approx items:
         self.FT_LIST = params.get('feature_list', ['in_hand'])
         self.p_idx = []
@@ -34,13 +31,14 @@ class PPO_Agent:
         pi_path = params.get('pi_saved', False)
         baseline_path = params.get('base_saved', False)
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.pi = PiApproximationWithNN(input_features=feature_length(self.FT_LIST), 52, self.ALPHA, pi_path)
-        self.baseline = VApproximationWithNN(input_features=feature_length(self.FT_LIST), self.ALPHA, baseline_path)
-
+        self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), 52, self.ALPHA, pi_path)
+        self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), self.ALPHA, baseline_path)
+        self.deck_idx = {v: k for k, v in deck_reference().items()}
+        self.deck_ref = deck_reference()
 
     def Do_Action(self, observation):
 
-        if observation['event_name'] == 'GameStart':
+        if observation['event_name'] == 'Game   Start':
             players = observation['data']['players']
             for player in players:
                 self.p_idx.append(player['playerName'])
@@ -70,7 +68,7 @@ class PPO_Agent:
                 choose_card = '2c'
             else:
                 action = self.action_select(observation)
-                choose_card = deck_reference()[action]
+                choose_card = self.deck_idx[action]
                 if self.print_info:
                     print(self.name, 'chose card ::', pretty_card(choose_card))
 
@@ -99,71 +97,33 @@ class PPO_Agent:
             for i in range(4):
                 self.won_cards.append([])
 
-    def update(self, rollouts):
-        advantages = rollouts.returns[:-1] - rollouts.value_preds[:-1]
-        advantages = (advantages - advantages.mean()) / (
-            advantages.std() + 1e-5)
+    def update(self, batch):
+        gs = []
+        for episode_info in batch:
+            G = 0
+            for i, result in enumerate(reversed(episode_info)):
+                t = len(episode_info) - i - 1
+                state, valid_filter, action, reward = result
+                state =  torch.tensor(state).float().to(self.device)
+                action = self.deck_ref[action['data']['action']['card']]
 
-        value_loss_epoch = 0
-        action_loss_epoch = 0
-        dist_entropy_epoch = 0
+                G = G*self.GAMMA + reward
+                delta = G - self.baseline(state)
+                self.baseline.update(state, G)
+                self.pi.update(state, action, (self.GAMMA**t), delta, valid_filter)
+            gs.append(G)
 
-        for e in range(self.ppo_epoch):
-            data_generator = rollouts.feed_forward_generator(
-                    advantages, self.num_mini_batch)
+        avg = 0
+        for g in gs:
+            avg += g / len(gs)
+        return avg
 
-            for sample in data_generator:
-                obs_batch, recurrent_hidden_states_batch, actions_batch, \
-                   value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, \
-                        adv_targ = sample
-
-                # Reshape to do in a single forward pass for all steps
-                values, action_log_probs, dist_entropy, _ = self.actor_critic.evaluate_actions(
-                    obs_batch, recurrent_hidden_states_batch, masks_batch,
-                    actions_batch)
-
-                ratio = torch.exp(action_log_probs -
-                                  old_action_log_probs_batch)
-                surr1 = ratio * adv_targ
-                surr2 = torch.clamp(ratio, 1.0 - self.clip_param,
-                                    1.0 + self.clip_param) * adv_targ
-                action_loss = -torch.min(surr1, surr2).mean()
-
-                if self.use_clipped_value_loss:
-                    value_pred_clipped = value_preds_batch + \
-                        (values - value_preds_batch).clamp(-self.clip_param, self.clip_param)
-                    value_losses = (values - return_batch).pow(2)
-                    value_losses_clipped = (
-                        value_pred_clipped - return_batch).pow(2)
-                    value_loss = 0.5 * torch.max(value_losses,
-                                                 value_losses_clipped).mean()
-                else:
-                    value_loss = 0.5 * (return_batch - values).pow(2).mean()
-
-                self.optimizer.zero_grad()
-                (value_loss * self.value_loss_coef + action_loss -
-                 dist_entropy * self.entropy_coef).backward()
-                nn.utils.clip_grad_norm_(self.actor_critic.parameters(),
-                                         self.max_grad_norm)
-                self.optimizer.step()
-
-                value_loss_epoch += value_loss.item()
-                action_loss_epoch += action_loss.item()
-                dist_entropy_epoch += dist_entropy.item()
-
-        num_updates = self.ppo_epoch * self.num_mini_batch
-
-        value_loss_epoch /= num_updates
-        action_loss_epoch /= num_updates
-        dist_entropy_epoch /= num_updates
-
-        return value_loss_epoch, action_loss_epoch, dist_entropy_epoch
 
     # Select an action using epsilon-greedy action selection
     def action_select(self, observation):
-        ft =  torch.tensor(features_state(observation)).to(self.device)
+        ft =  torch.tensor(self.features_state(observation)).float().to(self.device)
         val_filter = self.get_filter(observation)
-        return self.pi(features, val_filter).detach().item()
+        return self.pi(ft, val_filter)
 
     def features_state(self, observation):
         return get_features(observation, feature_list=self.FT_LIST, 
@@ -172,8 +132,8 @@ class PPO_Agent:
     def get_filter(self, observation):
         val_moves = filter_valid_moves(observation)
         deck_ref = deck_reference()
-        indices_valid = [deck_ref.index(card) for card in val_moves]
-        val_filter = torch.zeros(52)
+        indices_valid = [deck_ref[card] for card in val_moves]
+        val_filter = torch.zeros(52).float()
         for index in indices_valid:
             val_filter[index] = 1
         return val_filter
