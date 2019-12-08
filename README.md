@@ -49,72 +49,41 @@ This repository contains code for running repeatable experiments on the utility 
 
 
 ## Repository Structure
-|
 
+`|
 |
-
 |\
-
 | gymhearts
-
 |   |
-
 |   | 
-
 |   |\
-
 |   | Agent
-
 |   | 
-
 |   |\
-
 |   | Hearts
-
 |
-
 |
-
 |\
-
 | model_zoo
-
 |  | 
-
 |  |
-
 |  |\
-
 |  | feature_study_models
-
 |  |
-
 |  |\
-
 |  | linear_v_nonlinear_models
-
 |  |
-
 |  |\
-
 |  | policy_grad_models
-
 |
-
 |
-
 |\
-
 | writeup
-
 |  |
-
 |  |
-
 |  |\
-
 |  | data   
-
+`
 ### Gymhearts
 Contains the OpenAI gym environment code as well as the logic for various agents implemented 
 
