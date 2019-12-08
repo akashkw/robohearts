@@ -166,26 +166,20 @@ def update(nn, optimizer, device, G, features):
     nn.global_step += 1
 
 
-model_factory = {
-    'mlp': MLPClassifier,
-}
 
-
-def save_model(model):
+def save_model(model, model_name):
     from torch import save
     from os import path
-    for n, m in model_factory.items():
-        if isinstance(model, m):
-            return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), '%s.th' % n))
+        return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{filename}.th'))
     raise ValueError("model type '%s' not supported!" % str(type(model)))
 
 def load_model(model, feature_list):
     from torch import load
     from os import path
-    r = model_factory['mlp'](input_features=feature_length(feature_list))
+    r = MLPClassifier(input_features=feature_length(feature_list))
     if model is not '':
-        print("loaded from " + str(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model)))
-        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), '%s.th' % model), map_location='cpu'))
+        print("loaded from " + str(path.join(path.dirname(path.abspath(__file__)), f'{model}.th')))
+        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model}.th'), map_location='cpu'))
     return r
 
 
