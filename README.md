@@ -65,6 +65,7 @@ This repository contains code for running repeatable experiments on the utility 
     ├── LICENSE
     └── README.md
 
+
 ### Gymhearts
 Contains the OpenAI gym environment code as well as the logic for various agents implemented 
 
@@ -74,7 +75,8 @@ Agent folder contains a variety of agents for playing the game of Hearts.  This 
 #### Hearts
 Hearts contains the code for the game environment (see https://github.com/zmcx16/OpenAI-Gym-Hearts), with minor modifications to environment rendering and valid moves.
 
-### model_zoo
+
+### Model Zoo
 Directory containing the saved models from experiments.  These can be loaded and evaluated using the notebooks provided
 
 #### feature_study_models
@@ -88,11 +90,13 @@ These models correspond to the models trained in using only in_hand set of raw f
 #### policy_grad_models
 This directory store the models trained using the REINFORCE algorithm, following the naming convention in feature_study_models.  
 
+
 ### Writeup
 This folder contains a report on the construction and findings of our experiments
 
 #### Data
 Contains charts, graphs, and the raw data collected for our expirement
+
 
 
 ## License:
