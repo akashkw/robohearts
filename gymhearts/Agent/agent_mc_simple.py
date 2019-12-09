@@ -70,7 +70,7 @@ class MonteCarlo:
             hand = observation['data']['hand']
             value = self.value(hand)
             error = ret - value
-            features = in_hand_features(hand)
+            features = cards_to_bin_features(hand)
             self.weight_vec += self.ALPHA * error * features
             ret *= self.GAMMA
             errors.append(error)
@@ -86,7 +86,7 @@ class MonteCarlo:
 
     # Return the value of a hand
     def value(self, hand):
-        return np.dot(in_hand_features(hand), self.weight_vec)
+        return np.dot(cards_to_bin_features(hand), self.weight_vec)
 
     # Perform a one-step lookahead and select the action that has the best expected value
     def greedy_action(self, observation):
