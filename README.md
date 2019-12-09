@@ -11,15 +11,17 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
 [Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
 
 ---
-## TODO:
- - Rename alpha parameter models based on learning rate, upload other models and weights for the final writeup
- - Clean mc_monte_carlo and policy_grad notebooks
- - Clean code we have added (and specify)
+## TODO LAST DAY:
+ - Finish Data Collection
+ - Rename alpha parameter models based on learning rate, upload models and weights for the final writeup
+ - Clean simple and reinforce notebooks
+ - Clean code we have added (and specify which we added / modified)
  - Add data to writeup
- - Review Write up (Into Rough draft by tonight --12pm)
+ - Final Draft of WriteUp
  - Record video and add link
- - ~~Executables~~
- - ~~Fill in ReadMe~~
+ - Update ReadMe 
+ - Review checklist (website)
+ - Turn it in!
 
 
 ## References:
