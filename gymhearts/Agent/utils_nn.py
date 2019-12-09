@@ -40,7 +40,7 @@ def mlp_classifier_update(nn, optimizer, device, G, features):
     val = nn(features)
     ret = torch.Tensor([G]).to(device).float()
     optimizer.zero_grad()
-    loss = F.mse_loss(val, ret)
+    loss = torch.nn.MSELoss()(val, ret)
     loss.backward()
     optimizer.step()
 
