@@ -12,13 +12,13 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
 
 ---
 ## TODO LAST DAY:
- - Finish Data Collection
+ - ~~Finish Data Collection~~
  - ~~Rename alpha parameter models based on learning rate, upload models and weights for the final writeup~~
- - Clean simple and reinforce notebooks
- - Clean code we have added (and specify which we added / modified)
+ - ~~Clean simple and reinforce notebooks~~
+ - ~~Clean code we have added (and specify which we added / modified)~~
  - ~~Add data to writeup~~
- - Final Draft of WriteUp
  - Record video and add link
+ - Final WriteUp
  - Update ReadMe 
  - Review checklist (website)
  - Turn it in!
