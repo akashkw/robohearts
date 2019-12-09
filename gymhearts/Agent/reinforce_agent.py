@@ -3,7 +3,7 @@ import random
 import torch
 
 from .agent_utils import *
-from .policy_grad import *
+from .reinforce_utils import *
 
 class REINFORCE_Agent:
     def __init__(self, name, params=dict()):
