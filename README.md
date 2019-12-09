@@ -23,6 +23,10 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
  - Review checklist (website)
  - Turn it in!
 
+### Stretch Goals:
+ - Refactor agent utils, reinforce utils into nn utils, hand utils
+ - Add Cool logo to repo
+ - Comment all the code
 
 ## References:
 This Opengym AI environment is a slightly modified version of https://github.com/zmcx16/OpenAI-Gym-Hearts
