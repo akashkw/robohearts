@@ -130,9 +130,9 @@ class VApproximationWithNN(Baseline):
 def save_model(value_model, model_name, model_type, pi_model=None):
     from torch import save
     from os import path
-    if model_type == "mlp":
+    if model_type == "mc_nn":
         save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th'))
-    elif model_type == 'simple':
+    elif model_type == 'mc_simple':
         filename = path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th')
         with open(filename, 'wb') as file:
             pickle.dump(value_model, file)
