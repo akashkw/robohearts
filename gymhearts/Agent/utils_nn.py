@@ -50,11 +50,10 @@ def mlp_classifier_update(nn, optimizer, device, G, features):
 
 class PiApproximationWithNN():
     def __init__(self, input_features, output_features=52, params=dict()):
-
         self.nn = MLPClassifier(input_features, output_features)
         self.ALPHA = params.get('alpha', 3e-6)
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA, weight_decay=1e-4)
-        self.softmax = torch.nn.Softmax()
+        self.softmax = torch.nn.Softmax(dim=0)
 
     def __call__(self, state_features, valid_features) -> int:
         probs = self.action_probs(state_features, valid_features)
@@ -65,18 +64,21 @@ class PiApproximationWithNN():
         self.nn.eval()
         # Find preferences of all actions
         prefs = self.nn(torch.Tensor(state_features).float())
-        # Only consider preferences of valid actions
-        filtered_prefs = prefs * valid_features
         # Softmax to get probabilites of selection
-        probs = self.softmax(filtered_prefs)
+        probs = self.softmax(prefs)
+        # Only consider preferences of valid actions
+        valid_probs = probs * torch.Tensor(valid_features)
+        # Normalize so probs sum to 1
+        normalized_valid_probs = valid_probs / valid_probs.sum()
 
         # return first card we can, weird edge case
-        if math.isnan(probs.sum().item()) or probs.sum() == 0:
+        if math.isnan(valid_probs.sum().item()) or valid_probs.sum() == 0:
             print("WARNING: Numeric instability")
             for i in range(len(valid_features)):
                 if valid_features[i] == 1:
                     return i
-        return probs
+
+        return normalized_valid_probs
 
     def reinforce_update(self, state_features, action, gamma_t, delta, valid_features):
         probs = self.action_probs(state_features, valid_features)
@@ -84,7 +86,7 @@ class PiApproximationWithNN():
         if math.isnan(probs.sum().item()) or probs.sum() == 0:
             print("WARNING: Numeric instability")
             return
-        else: 
+        else:
             p = Categorical(probs=probs)
             log_prob = p.log_prob(torch.Tensor([action]))
         loss = -(gamma_t*delta*log_prob)

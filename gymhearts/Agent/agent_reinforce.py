@@ -37,8 +37,8 @@ class REINFORCE_Agent:
         if model_name:
             self.pi, self.baseline = load_model(model_name, 'reinforce', self.FT_LIST)
         else:
-            self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), params)
-            self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), params)
+            self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), params=params)
+            self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), params=params)
 
         self.deck = create_deck()
         self.deck_reference = deck_reference()
@@ -111,6 +111,7 @@ class REINFORCE_Agent:
                 state_features, valid_features, action = history
                 state_features = torch.Tensor(state_features).float().to(self.device)
                 delta = G - self.baseline(state_features)
+                action = self.deck_reference[action['data']['action']['card']]
                 self.baseline.update(state_features, G)
                 self.pi.reinforce_update(state_features, action, (self.GAMMA**t), delta, valid_features)
                 G *= self.GAMMA
@@ -134,6 +135,5 @@ class REINFORCE_Agent:
     def generate_features(self, observation):
         state_features = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
-        hand = observation['data']['hand']
-        valid_features = cards_to_valid_bin_features(hand)
+        valid_features = cards_to_valid_bin_features(observation)
         return state_features, valid_features
