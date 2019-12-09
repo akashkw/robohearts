@@ -2,7 +2,6 @@ import math
 import pickle
 import numpy as np
 import torch
-import torch.nn.functional as F
 import torch.utils.tensorboard as tb
 
 from os import path
@@ -55,37 +54,47 @@ class PiApproximationWithNN():
         self.nn = MLPClassifier(input_features, output_features)
         self.ALPHA = params.get('alpha', 3e-6)
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA, weight_decay=1e-4)
+        self.softmax = torch.nn.Softmax()
 
-    def __call__(self, s, valid_filter) -> int:
-        # Sample an action according to the policy
-        out = F.softmax(self.nn(torch.Tensor(s).float()), dim=0) * valid_filter
+    def __call__(self, state_features, valid_features) -> int:
+        probs = self.action_probs(state_features, valid_features)
+        # Randomly select according to probs
+        return self.sample_categorical(probs)
+    
+    def action_probs(self, state_features, valid_features):
+        self.nn.eval()
+        # Find preferences of all actions
+        prefs = self.nn(torch.Tensor(state_features).float())
+        # Only consider preferences of valid actions
+        filtered_prefs = prefs * valid_features
+        # Softmax to get probabilites of selection
+        probs = self.softmax(filtered_prefs)
 
         # return first card we can, weird edge case
-        if math.isnan(out.sum().item()) or out.sum() == 0:
+        if math.isnan(probs.sum().item()) or probs.sum() == 0:
             print("WARNING: Numeric instability")
-            for i in range(len(valid_filter)):
-                if valid_filter[i] == 1:
+            for i in range(len(valid_features)):
+                if valid_features[i] == 1:
                     return i
+        return probs
 
-        probs = out / out.sum()
-        return self.sample_categorical(probs)
-
-    def reinforce_update(self, s, a, gamma_t, delta, valid_filter):
-        self.optim.zero_grad()
-        out = F.softmax(self.nn(s), dim=0)*valid_filter
-        if math.isnan(out.sum().item()) or out.sum() == 0:
+    def reinforce_update(self, state_features, action, gamma_t, delta, valid_features):
+        probs = self.action_probs(state_features, valid_features)
+        self.nn.train() 
+        if math.isnan(probs.sum().item()) or probs.sum() == 0:
             print("WARNING: Numeric instability")
             return
         else: 
-            probs = out / out.sum()
             p = Categorical(probs=probs)
-            l = p.log_prob(torch.Tensor(a))
-        (-l*delta*gamma_t).backward()
+            log_prob = p.log_prob(torch.Tensor([action]))
+        loss = -(gamma_t*delta*log_prob)
+        self.optim.zero_grad()
+        loss.backward()
         # torch.nn.utils.clip_grad_norm_(self.nn.parameters(),.5)
         self.optim.step()
 
-    def sample_categorical(self, out):
-        return Categorical(probs=out).sample().item()
+    def sample_categorical(self, probs):
+        return Categorical(probs=probs).sample().item()
 
 class Baseline(object):
     """
@@ -94,25 +103,26 @@ class Baseline(object):
     def __init__(self, b):
         self.b = b
 
-    def __call__(self,s) -> float:
+    def __call__(self, s) -> float:
         return self.b
 
-    def update(self,s,G):
+    def update(self, s, G):
         pass
 
 
 class VApproximationWithNN(Baseline):
-    def __init__(self, input_features, output_features=1):
-        self.nn = MLPClassifier(input_features, output_features).float()
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha, weight_decay=1e-4)
+    def __init__(self, input_features, output_features=1, params=dict()):
+        self.nn = MLPClassifier(input_features, output_features)
+        self.ALPHA = params.get('alpha', 3e-6)
+        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA, weight_decay=1e-4)
         self.device = torch.device('cpu')
 
-    def __call__(self, s):
+    def __call__(self, state_features):
         self.nn.eval()
-        return self.nn(torch.Tensor(s).float()).detach().item()
+        return self.nn(torch.Tensor(state_features).float()).detach().item()
 
-    def update(self, s, G):
-        mlp_classifier_update(self.nn, self.optim, self.device, G, get_features(s))
+    def update(self, state_features, G):
+        mlp_classifier_update(self.nn, self.optim, self.device, G, state_features)
 
 
 # ----------------- MODEL UTILS ------------------

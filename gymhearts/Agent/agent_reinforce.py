@@ -32,17 +32,17 @@ class REINFORCE_Agent:
         # Overwrite -> comment out if not needed
         self.device = torch.device('cpu')
 
-        self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), 52, self.ALPHA, pi_path)
-        self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), self.ALPHA, baseline_path)
+        self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), 52, self.ALPHA)
+        self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), self.ALPHA)
 
         self.deck = create_deck()
+        self.deck_reference = deck_reference()
 
     def Do_Action(self, observation):
 
-        if observation['event_name'] == 'Game   Start':
-            players = observation['data']['players']
-            for player in players:
-                self.p_idx.append(player['playerName'])
+        if observation['event_name'] == 'GameStart':
+            # Create a list of player names
+            self.players = [entry['playerName'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'PassCards':
             if self.print_info:
@@ -82,43 +82,35 @@ class REINFORCE_Agent:
                 }
 
         elif observation['event_name'] == 'NewRound':
-            players = observation['data']['players']
-            for i, player in enumerate(players):
-                self.scores[i] = player['score']
+            # Init scores for all players
+            self.scores = [entry['score'] for entry in observation['data']['players']]
 
         elif observation['event_name'] == 'ShowTrickEnd':
-            winner = self.p_idx.index(observation['data']['trickWinner'])
+            # Record the cards won in a trick, add to played_cards history
+            winner = self.players.index(observation['data']['trickWinner'])
             for card in observation['data']['cards']:
                 self.won_cards[winner].append(card)
                 self.played_cards.append(card)
 
         elif observation['event_name'] == 'RoundEnd':
+            # Reset for the next round
             self.played_cards = []
-            self.won_cards = []
-            for i in range(4):
-                self.won_cards.append([])
+            self.won_cards = [list() for i in range(4)]
 
-    # Update using the REINFORCE algorithm, with episodes in patches
+    # Update using the REINFORCE algorithm, with episodes in batches
     def update(self, batch):
-        gs = []
-        for episode_info in batch:
-            G = 0
-            for i, result in enumerate(reversed(episode_info)):
-                t = len(episode_info) - i - 1
-                state, valid_filter, action, reward = result
-                state =  torch.tensor(state).float().to(self.device)
-                action = self.deck_ref[action['data']['action']['card']]
-
-                G = G*self.GAMMA + reward
-                delta = G - self.baseline(state)
-                self.baseline.update(state, G)
-                self.pi.update(state, action, (self.GAMMA**t), delta, valid_filter)
-            gs.append(G)
-
-        avg = 0
-        for g in gs:
-            avg += g / len(gs)
-        return avg
+        G_list = []
+        for episode_history, G in batch:
+            for i, history in enumerate(reversed(episode_history)):
+                t = len(history) - i - 1
+                state_features, valid_features, action = history
+                state_features = torch.Tensor(state_features).float().to(self.device)
+                delta = G - self.baseline(state_features)
+                self.baseline.update(state_features, G)
+                self.pi.reinforce_update(state_features, action, (self.GAMMA**t), delta, valid_features)
+                G *= self.GAMMA
+            G_list.append(G)
+        return np.array(G_list).mean()
 
     # Select an action using epsilon-greedy action selection
     def epsilon_greedy_selection(self, observation):
