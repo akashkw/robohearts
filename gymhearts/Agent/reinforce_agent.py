@@ -1,13 +1,11 @@
-import random
 import numpy as np
-from datetime import datetime
+import random
 import torch
-import copy
 
 from .agent_utils import *
 from .policy_grad import *
 
-class PPO_Agent:
+class Reinforce_Agent:
     def __init__(self, name, params=dict()):
         # Game Params
         self.name = name
@@ -15,7 +13,8 @@ class PPO_Agent:
 
         # Agent Params
         self.GAMMA = params.get('gamma', .95)
-        self.ALPHA = params.get('alpha', 3e-4)
+        # Note - needed low Alpha to get this working!
+        self.ALPHA = params.get('alpha', 3e-6)
 
         # fn approx items:
         self.FT_LIST = params.get('feature_list', ['in_hand'])
@@ -97,6 +96,7 @@ class PPO_Agent:
             for i in range(4):
                 self.won_cards.append([])
 
+    # Update using the REINFORCE algorithm, with episodes in patches
     def update(self, batch):
         gs = []
         for episode_info in batch:

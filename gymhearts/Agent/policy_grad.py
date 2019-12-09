@@ -1,11 +1,12 @@
-from typing import Iterable
+import math
 import numpy as np
 import torch
-from torch.distributions import Categorical
 import torch.nn.functional as F
+
+from torch.distributions import Categorical
 from torch import load
 from os import path
-import math
+from .agent_utils import MLPClassifier
 
 class PiApproximationWithNN():
     def __init__(self,
@@ -17,6 +18,7 @@ class PiApproximationWithNN():
         state_dims: the number of dimensions of state space
         action_dims: the number of possible actions
         alpha: learning rate
+        saved:  load pretrained model
         """
         # TODO: implement here
         self.nn = MLPClassifier(state_dims, output_features=num_actions).float()
@@ -30,7 +32,7 @@ class PiApproximationWithNN():
         out = F.softmax(self.nn(torch.FloatTensor(s)), dim=0)*valid_filter
         # return first card we can, wierd edge case
         if math.isnan(out.sum().item()) or out.sum() == 0:
-            print("Numeric instability.  Whack")
+            print("WARNING: Numeric instability")
             for idx in range(len(valid_filter)):
                 if valid_filter[idx] == 1:
                     return idx
@@ -48,7 +50,7 @@ class PiApproximationWithNN():
         self.optim.zero_grad()
         out = F.softmax(self.nn(s), dim=0)*valid_filter
         if math.isnan(out.sum().item()) or out.sum() == 0:
-            print("Numeric instability.  Whack")
+            print("WARNING: Numeric instability")
             return
         else: 
             probs = out / out.sum()
@@ -58,6 +60,7 @@ class PiApproximationWithNN():
         # torch.nn.utils.clip_grad_norm_(self.nn.parameters(),.5)
         self.optim.step()
 
+    # Save the policy model to predetermined location
     def save_pi_model(self):
         from torch import save
         from os import path
@@ -65,6 +68,7 @@ class PiApproximationWithNN():
 
 def sample_categorical(out):
     return Categorical(probs=out).sample().item()
+
 
 class Baseline(object):
     """
@@ -79,31 +83,6 @@ class Baseline(object):
     def update(self,s,G):
         pass
 
-class MLPClassifier(torch.nn.Module):
-    def __init__(self, input_features, output_features=1, layers=None, log=False, log_dir='./log'):
-        super().__init__()
-        if not layers:
-            layers = [input_features * 2, input_features * 4]
-
-        L = []
-        c = input_features
-        for l in layers:
-            L.append(torch.nn.Linear(c, l))
-            L.append(torch.nn.ReLU())
-            c = l
-        L.append(torch.nn.Linear(c, output_features))
-
-        self.network = torch.nn.Sequential(*L)
-
-        self.global_step = 0
-
-        self.log = log
-        if self.log:
-            self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
-
-
-    def forward(self, x):
-        return self.network(x)
 
 class VApproximationWithNN(Baseline):
     def __init__(self,
