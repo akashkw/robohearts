@@ -1,8 +1,8 @@
 import gym
 
 from Hearts import *
-from Agent.human import Human
-from Agent.random_agent import RandomAgent
+from Agent.agent_human import Human
+from Agent.agent_random import RandomAgent
 
 NUM_EPISODES = 10
 MAX_SCORE = 100

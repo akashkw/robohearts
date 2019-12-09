@@ -1,4 +1,4 @@
-from .agent_utils import *
+from .utils_env import *
 
 class Human:
     def __init__(self, name, params=dict()):

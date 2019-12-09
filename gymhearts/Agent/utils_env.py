@@ -1,13 +1,9 @@
-import torch
 import numpy as np
-import torch.nn.functional as F
-import torch.utils.tensorboard as tb
-from os import path
-import pickle
 
 '''
 Utilities to be implemented in all agents
 '''
+# -------------- CARD / SCORE UTILS --------------
 
 suits = ["c", "d", "s", "h"]
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
@@ -59,6 +55,8 @@ def pretty_card(card):
     suit = card[1]
     suit_lookup = {'c':'♣', 'd':'♦', 's':'♠', 'h':'♥'}
     return f'[{rank}{suit_lookup[suit]}]'
+
+# -------------- GAMEPLAY UTILS --------------
 
 # Return a list of all valid moves in Hearts.Card format
 def filter_valid_moves(observation):
@@ -125,91 +123,9 @@ def handle_event(observation):
     else:
         return observation
 
-# --------------FUNCTION APPROX-------------------
 
-class MLPClassifier(torch.nn.Module):
-    def __init__(self, input_features, output_features=1, layers=None, log=False, log_dir='./log'):
-        super().__init__()
-        if not layers:
-            layers = [input_features * 2, input_features * 4]
+# ------------- FEATURE UTILS --------------
 
-        L = []
-        c = input_features
-        for l in layers:
-            L.append(torch.nn.Linear(c, l))
-            L.append(torch.nn.ReLU())
-            c = l
-        L.append(torch.nn.Linear(c, output_features))
-
-        self.network = torch.nn.Sequential(*L)
-
-        self.global_step = 0
-
-        self.log = log
-        if self.log:
-            self.logger = tb.SummaryWriter(path.join(log_dir, 'train'), flush_secs=1)
-
-
-    def forward(self, x):
-        return self.network(x)
-
-def update(nn, optimizer, device, G, features):
-    nn.train()
-    val = nn(features)
-    ret = torch.tensor([G]).to(device).float()
-    optimizer.zero_grad()
-    loss = F.mse_loss(val, ret)
-    loss.backward()
-    optimizer.step()
-
-    if nn.log and nn.global_step % 1000 == 0:
-        nn.logger.add_scalar('loss', loss, nn.global_step)
-    nn.global_step += 1
-
-
-
-def save_model(value_model, model_name, model_type, pi_model=None):
-    from torch import save
-    from os import path
-    if model_type == "mlp":
-        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'))
-    elif model_type == 'simple':
-        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
-        with open(filename, 'wb') as file:
-            pickle.dump(value_model, file)
-    elif model_type == 'reinforce':
-        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_v.th'))
-        save(pi_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_pi.th'))
-    else:
-        if model_type == '':
-            raise ValueError(f"model_type is blank!")
-        else:
-            raise ValueError(f"model_type '{model_type}' is not supported!")
-
-def load_model(model_name, model_type, feature_list=None):
-    from torch import load
-    from os import path
-    if model_type == "mlp":
-        model = MLPClassifier(input_features=feature_length(feature_list))
-        model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'), map_location='cpu'))
-        return model
-    elif model_type == 'simple':
-        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
-        weights = []
-        with open(filename, 'rb') as file:
-            weights = pickle.load(file)
-        return weights
-    elif model_type == 'reinforce':
-        pi = []
-        return None
-    else:
-        if model_type == '':
-            raise ValueError(f"model_type is blank!")
-        else:
-            raise ValueError(f"model_type '{model_type}' is not supported!")
-
-
-#-------------- FEATURE CALCULATIONS --------------
 def cards_to_bin_features(cards):
     deck = deck_reference()
     feature_vec = np.zeros(52)
@@ -239,13 +155,7 @@ def won_cards_features(won_cards):
 def scores_features(scores):
     return np.array(scores)
 
-'''
- Need data for feature construction - played cards and won cards can be built from TrickEnd event
- in the primary program driver (note, played_cards could be a list, won_cards could be list of lists
- or a dictionary (lists of lists/2d array seems easier).  Probably cleanest sol is both are np
- arrays we update at the end of tricks in the MC agent (ie MC keeps the state).  Scores just stored
- in a list easily. 
-'''
+# Generate a list of features based on the feature list
 def get_features(observation, feature_list=['in_hand'], played_cards=None, won_cards=None, scores=None):
     features = np.array([])
 

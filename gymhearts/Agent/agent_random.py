@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from .agent_utils import *
+from .utils_env import *
 
 class RandomAgent:
     def __init__(self, name, params=dict()):
