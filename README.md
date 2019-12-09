@@ -18,8 +18,8 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
  - Add data to writeup
  - Review Write up (Into Rough draft by tonight --12pm)
  - Record video and add link
- - Executables (?)
- - Fill in ReadMe
+ - ~~Executables~~
+ - ~~Fill in ReadMe~~
 
 
 ## References:
