@@ -9,6 +9,7 @@ _Using reinforcement learning for the game of hearts. <3_
 alt="Video of project description" width="240" height="180" border="10" /></a>
 
 [Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
+
 ---
 ## TODO:
  - Rename alpha parameter models based on learning rate, upload other models and weights for the final writeup
