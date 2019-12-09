@@ -5,7 +5,7 @@ import torch
 from .agent_utils import *
 from .policy_grad import *
 
-class Reinforce_Agent:
+class REINFORCE_Agent:
     def __init__(self, name, params=dict()):
         # Game Params
         self.name = name
