@@ -8,6 +8,7 @@ _Using reinforcement learning for the game of hearts. <3_
 " target="_blank"><img src="http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg" 
 alt="Video of project description" width="240" height="180" border="10" /></a>
 
+[Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
 ---
 ## TODO:
  - Rename alpha parameter models based on learning rate, upload other models and weights for the final writeup
@@ -70,7 +71,8 @@ This repository contains code for running repeatable experiments on the utility 
 Contains the OpenAI gym environment code as well as the logic for various agents implemented 
 
 #### Agent
-Agent folder contains a variety of agents for playing the game of Hearts.  This includes a human player, which enables an interactive game through command prompt, monte_carlo agent, which uses simple linear function approximation and trains with linear rollouts, and monte_carlo_nn.py, which contain an agent using nonlinear function approximation with neural networks.  The code for policy gradient methods and REINFORCE agents also reside in this folder with the random agent which is used for baseline comparison in experiments.  Finally, utilities for agents, such as filtering valid moves and manipulating raw observations are provided in this folder.
+Agent folder contains a variety of agents for playing the game of Hearts, includes human players, linear value approximation agent, nonlinear value apporximation agent,
+policy gradient agents, and a random agent which serves as a baseline for comparisson and training.
 
 #### Hearts
 Hearts contains the code for the game environment (see https://github.com/zmcx16/OpenAI-Gym-Hearts), with minor modifications to environment rendering and valid moves.
