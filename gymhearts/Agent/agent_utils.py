@@ -3,6 +3,7 @@ import numpy as np
 import torch.nn.functional as F
 import torch.utils.tensorboard as tb
 from os import path
+import pickle
 
 '''
 Utilities to be implemented in all agents
@@ -167,19 +168,45 @@ def update(nn, optimizer, device, G, features):
 
 
 
-def save_model(model, model_name):
+def save_model(value_model, model_name, model_type, pi_model=None):
     from torch import save
     from os import path
-    return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'))
+    if model_type == "mlp":
+        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'))
+    elif model_type == 'simple':
+        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
+        with open(filename, 'wb') as file:
+            pickle.dump(value_model, file)
+    elif model_type == 'reinforce':
+        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_v.th'))
+        save(pi_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_pi.th'))
+    else:
+        if model_type == '':
+            raise ValueError(f"model_type is blank!")
+        else:
+            raise ValueError(f"model_type '{model_type}' is not supported!")
 
-def load_model(model, feature_list):
+def load_model(model_name, model_type, feature_list=None):
     from torch import load
     from os import path
-    r = MLPClassifier(input_features=feature_length(feature_list))
-    if model is not '':
-        print("loaded from " + str(path.join(path.dirname(path.abspath(__file__)), f'{model}.th')))
-        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model}.th'), map_location='cpu'))
-    return r
+    if model_type == "mlp":
+        model = MLPClassifier(input_features=feature_length(feature_list))
+        model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'), map_location='cpu'))
+        return model
+    elif model_type == 'simple':
+        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
+        weights = []
+        with open(filename, 'rb') as file:
+            weights = pickle.load(file)
+        return weights
+    elif model_type == 'reinforce':
+        pi = []
+        return None
+    else:
+        if model_type == '':
+            raise ValueError(f"model_type is blank!")
+        else:
+            raise ValueError(f"model_type '{model_type}' is not supported!")
 
 
 #-------------- FEATURE CALCULATIONS --------------

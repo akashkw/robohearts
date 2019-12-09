@@ -8,17 +8,12 @@ from os import path
 import math
 
 class PiApproximationWithNN():
-    def __init__(self,
-                 state_dims,
-                 num_actions,
-                 alpha,
-                 saved=False):
+    def __init__(self, state_dims, num_actions, alpha, saved=False):
         """
         state_dims: the number of dimensions of state space
         action_dims: the number of possible actions
         alpha: learning rate
         """
-        # TODO: implement here
         self.nn = MLPClassifier(state_dims, output_features=num_actions).float()
         if saved:
             self.nn.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'pi.th'), map_location='cpu'))
