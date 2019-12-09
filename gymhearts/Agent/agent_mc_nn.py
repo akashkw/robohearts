@@ -4,7 +4,8 @@ from datetime import datetime
 import torch
 import copy
 
-from .agent_utils import *
+from .utils_env import *
+from .utils_nn import *
 
 class MonteCarloNN:
     def __init__(self, name, params=dict()):
@@ -32,7 +33,6 @@ class MonteCarloNN:
         self.won_cards=[list() for i in range(4)]
 
         # NN params
-        model_name = params.get('load_model', '')
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         # Overwrite -> comment out if not needed
         self.device = torch.device('cpu')
@@ -40,8 +40,10 @@ class MonteCarloNN:
         # Layers of the Neural Network
         self.layers = params.get('layers', [feature_length(self.FT_LIST)*2, feature_length(self.FT_LIST)*4])
 
+        # Load model if desired
+        model_name = params.get('load_model', '')
         if model_name:
-            self.nn = load_model(model_name, self.FT_LIST).to(self.device)
+            self.nn = load_model(model_name, 'mc_nn', self.FT_LIST).to(self.device)
         else:
             self.nn = MLPClassifier(input_features=feature_length(self.FT_LIST), layers=self.layers, log=self.log).to(self.device)
 
@@ -115,7 +117,7 @@ class MonteCarloNN:
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
             features = torch.tensor(ft).to(self.device).float()
-            update(self.nn, self.optim, self.device, ret, features)
+            mlp_classifier_update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
         return
 
@@ -131,7 +133,7 @@ class MonteCarloNN:
     def value(self, observation):
         ft = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
-        features = torch.tensor(ft).to(self.device).float()
+        features = torch.Tensor(ft).to(self.device).float()
         self.nn.eval()
         return self.nn(features).detach().item()
 

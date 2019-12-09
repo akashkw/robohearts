@@ -3,7 +3,8 @@ import numpy as np
 from datetime import datetime
 import torch
 
-from .agent_utils import *
+from .utils_env import *
+from .utils_nn import *
 
 class MonteCarlo:
     def __init__(self, name, params=dict()):
@@ -15,9 +16,13 @@ class MonteCarlo:
         self.EPSILON = params.get('epsilon', .05)
         self.GAMMA = params.get('gamma', .95)
         self.ALPHA = params.get('alpha', .1)
-
-        # Value function params
-        self.weight_vec = params.get('weight_vec', np.zeros(52))
+        
+        # Load model if desired
+        model_name = params.get('load_model', None)
+        if model_name:
+            self.weight_vec = load_model(model_name, 'mc_simple')
+        else:
+            self.weight_vec = params.get('weight_vec', np.zeros(52))
 
 
     def Do_Action(self, observation):

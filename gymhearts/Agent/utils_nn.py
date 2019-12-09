@@ -52,11 +52,11 @@ def mlp_classifier_update(nn, optimizer, device, G, features):
 class PiApproximationWithNN():
     def __init__(self, input_features, output_features, params=dict()):
 
-        self.nn = MLPClassifier(input_features=input_features, output_features=output_features)
+        self.nn = MLPClassifier(input_features, output_features)
         self.ALPHA = params.get('alpha', 3e-6)
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha, weight_decay=1e-4)
 
-    def __call__(self,s, valid_filter) -> int:
+    def __call__(self, s, valid_filter) -> int:
         # Sample an action according to the policy
         out = F.softmax(self.nn(torch.FloatTensor(s)), dim=0)*valid_filter
         # return first card we can, wierd edge case
@@ -66,16 +66,10 @@ class PiApproximationWithNN():
                 if valid_filter[idx] == 1:
                     return idx
         probs = out / out.sum()
-        return sample_categorical(probs)
+        return self.sample_categorical(probs)
        
 
-    def update(self, s, a, gamma_t, delta, valid_filter):
-        """
-        s: state S_t
-        a: action A_t
-        gamma_t: gamma^t
-        delta: G-v(S_t,w)
-        """
+    def reinforce_update(self, s, a, gamma_t, delta, valid_filter):
         self.optim.zero_grad()
         out = F.softmax(self.nn(s), dim=0)*valid_filter
         if math.isnan(out.sum().item()) or out.sum() == 0:
@@ -89,15 +83,8 @@ class PiApproximationWithNN():
         # torch.nn.utils.clip_grad_norm_(self.nn.parameters(),.5)
         self.optim.step()
 
-    # Save the policy model to predetermined location
-    def save_pi_model(self):
-        from torch import save
-        from os import path
-        return save(self.nn.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'pi.th'))
-
-def sample_categorical(out):
-    return Categorical(probs=out).sample().item()
-
+    def sample_categorical(self, out):
+        return Categorical(probs=out).sample().item()
 
 class Baseline(object):
     """
@@ -114,26 +101,17 @@ class Baseline(object):
 
 
 class VApproximationWithNN(Baseline):
-    def __init__(self,
-                 state_dims,
-                 alpha,
-                 saved=False):
-        """
-        state_dims: the number of dimensions of state space
-        alpha: learning rate
-        """
-        self.nn = MLPClassifier(state_dims).float()
+    def __init__(self, state_dims, output_features):
+        self.nn = MLPClassifier(input_features, output_features).float()
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha, weight_decay=1e-4)
-        if saved:
-            self.nn.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'baseline.th'), map_location='cpu'))
-        self.nn = self.nn.train()
         self.device = torch.device('cpu')
 
-    def __call__(self,s):
-        return self.nn(torch.FloatTensor(s)).detach().item()
+    def __call__(self, s):
+        self.nn.eval()
+        return self.nn(torch.Tensor(s).float()).detach().item()
 
     def update(self, s, G):
-        mc_update(self.nn, self.optim, self.device, G, get_features(s))
+        mlp_classifier_update(self.nn, self.optim, self.device, G, get_features(s))
 
 
 # ----------------- MODEL UTILS ------------------
@@ -159,11 +137,11 @@ def save_model(value_model, model_name, model_type, pi_model=None):
 def load_model(model_name, model_type, feature_list=None):
     from torch import load
     from os import path
-    if model_type == "mlp":
+    if model_type == "mc_nn":
         model = MLPClassifier(input_features=feature_length(feature_list))
         model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'), map_location='cpu'))
         return model
-    elif model_type == 'simple':
+    elif model_type == 'mc_simple':
         filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
         weights = []
         with open(filename, 'rb') as file:
