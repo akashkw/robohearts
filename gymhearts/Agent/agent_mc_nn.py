@@ -16,7 +16,7 @@ class MonteCarloNN:
         self.log_dir = params.get('log_dir', '/content/robohearts/log')
 
         # Agent Params
-        self.EPSILON = params.get('epsilon', .05)
+        self.EPSILON = params.get('epsilon', .01)
         self.GAMMA = params.get('gamma', .95)
         self.ALPHA = params.get('alpha', 1e-3)
 
@@ -113,10 +113,9 @@ class MonteCarloNN:
 
     def update_weights(self, history, ret):
         for observation, played_cards, won_cards in reversed(history):
-
             ft = get_features(observation, feature_list=self.FT_LIST, 
                 played_cards=played_cards, won_cards=won_cards, scores=self.scores)
-            features = torch.tensor(ft).to(self.device).float()
+            features = torch.Tensor(ft).to(self.device).float()
             mlp_classifier_update(self.nn, self.optim, self.device, ret, features)
             ret *= self.GAMMA
         return

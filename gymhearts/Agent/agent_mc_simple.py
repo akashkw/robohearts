@@ -13,7 +13,7 @@ class MonteCarlo:
         self.print_info = params.get('print_info', False)
 
         # Agent Params
-        self.EPSILON = params.get('epsilon', .05)
+        self.EPSILON = params.get('epsilon', .01)
         self.GAMMA = params.get('gamma', .95)
         self.ALPHA = params.get('alpha', .1)
         

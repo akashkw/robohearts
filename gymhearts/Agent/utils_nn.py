@@ -50,24 +50,25 @@ def mlp_classifier_update(nn, optimizer, device, G, features):
     nn.global_step += 1
 
 class PiApproximationWithNN():
-    def __init__(self, input_features, output_features, params=dict()):
+    def __init__(self, input_features, output_features=52, params=dict()):
 
         self.nn = MLPClassifier(input_features, output_features)
         self.ALPHA = params.get('alpha', 3e-6)
-        self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha, weight_decay=1e-4)
+        self.optim = torch.optim.Adam(self.nn.parameters(), lr=self.ALPHA, weight_decay=1e-4)
 
     def __call__(self, s, valid_filter) -> int:
         # Sample an action according to the policy
-        out = F.softmax(self.nn(torch.FloatTensor(s)), dim=0)*valid_filter
-        # return first card we can, wierd edge case
+        out = F.softmax(self.nn(torch.Tensor(s).float()), dim=0) * valid_filter
+
+        # return first card we can, weird edge case
         if math.isnan(out.sum().item()) or out.sum() == 0:
             print("WARNING: Numeric instability")
-            for idx in range(len(valid_filter)):
-                if valid_filter[idx] == 1:
-                    return idx
+            for i in range(len(valid_filter)):
+                if valid_filter[i] == 1:
+                    return i
+
         probs = out / out.sum()
         return self.sample_categorical(probs)
-       
 
     def reinforce_update(self, s, a, gamma_t, delta, valid_filter):
         self.optim.zero_grad()
@@ -78,7 +79,7 @@ class PiApproximationWithNN():
         else: 
             probs = out / out.sum()
             p = Categorical(probs=probs)
-            l = p.log_prob(torch.tensor(a))
+            l = p.log_prob(torch.Tensor(a))
         (-l*delta*gamma_t).backward()
         # torch.nn.utils.clip_grad_norm_(self.nn.parameters(),.5)
         self.optim.step()
@@ -90,7 +91,7 @@ class Baseline(object):
     """
     The dumbest baseline; a constant for every state
     """
-    def __init__(self,b):
+    def __init__(self, b):
         self.b = b
 
     def __call__(self,s) -> float:
@@ -101,7 +102,7 @@ class Baseline(object):
 
 
 class VApproximationWithNN(Baseline):
-    def __init__(self, state_dims, output_features):
+    def __init__(self, input_features, output_features=1):
         self.nn = MLPClassifier(input_features, output_features).float()
         self.optim = torch.optim.Adam(self.nn.parameters(), lr=alpha, weight_decay=1e-4)
         self.device = torch.device('cpu')
@@ -120,14 +121,14 @@ def save_model(value_model, model_name, model_type, pi_model=None):
     from torch import save
     from os import path
     if model_type == "mlp":
-        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'))
+        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th'))
     elif model_type == 'simple':
-        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
+        filename = path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th')
         with open(filename, 'wb') as file:
             pickle.dump(value_model, file)
     elif model_type == 'reinforce':
-        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_v.th'))
-        save(pi_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'{model_name}_pi.th'))
+        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_v.th'))
+        save(pi_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_pi.th'))
     else:
         if model_type == '':
             raise ValueError(f"model_type is blank!")
@@ -139,10 +140,10 @@ def load_model(model_name, model_type, feature_list=None):
     from os import path
     if model_type == "mc_nn":
         model = MLPClassifier(input_features=feature_length(feature_list))
-        model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th'), map_location='cpu'))
+        model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th'), map_location='cpu'))
         return model
     elif model_type == 'mc_simple':
-        filename = path.join(path.dirname(path.abspath(__file__)), f'{model_name}.th')
+        filename = path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th')
         weights = []
         with open(filename, 'rb') as file:
             weights = pickle.load(file)

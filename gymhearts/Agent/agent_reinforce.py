@@ -2,8 +2,8 @@ import numpy as np
 import random
 import torch
 
-from .agent_utils import *
-from .reinforce_utils import *
+from .utils_env import *
+from .utils_nn import *
 
 class REINFORCE_Agent:
     def __init__(self, name, params=dict()):
@@ -12,6 +12,7 @@ class REINFORCE_Agent:
         self.print_info = params.get('print_info', False)
 
         # Agent Params
+        self.EPSILON = params.get('epsilon', .01)
         self.GAMMA = params.get('gamma', .95)
         # Note - needed low Alpha to get this working!
         self.ALPHA = params.get('alpha', 3e-6)
@@ -27,13 +28,14 @@ class REINFORCE_Agent:
         self.won_cards=[list() for i in range(4)]
 
         # NN params
-        pi_path = params.get('pi_saved', False)
-        baseline_path = params.get('base_saved', False)
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        # Overwrite -> comment out if not needed
+        self.device = torch.device('cpu')
+
         self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), 52, self.ALPHA, pi_path)
         self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), self.ALPHA, baseline_path)
-        self.deck_idx = {v: k for k, v in deck_reference().items()}
-        self.deck_ref = deck_reference()
+
+        self.deck = create_deck()
 
     def Do_Action(self, observation):
 
@@ -66,8 +68,8 @@ class REINFORCE_Agent:
             if '2c' in hand:
                 choose_card = '2c'
             else:
-                action = self.action_select(observation)
-                choose_card = self.deck_idx[action]
+                action = self.epsilon_greedy_selection(observation)
+                choose_card = filter_valid_moves(observation)[action]
                 if self.print_info:
                     print(self.name, 'chose card ::', pretty_card(choose_card))
 
@@ -118,25 +120,23 @@ class REINFORCE_Agent:
             avg += g / len(gs)
         return avg
 
+    # Select an action using epsilon-greedy action selection
+    def epsilon_greedy_selection(self, observation):
+        rand = np.random.uniform(0,1)
+        if rand < self.EPSILON:
+            return np.random.randint(0, len(filter_valid_moves(observation)))
+        else:
+            return self.greedy_action(observation)
 
     # Select an action using epsilon-greedy action selection
-    def action_select(self, observation):
-        ft =  torch.tensor(self.features_state(observation)).float().to(self.device)
-        val_filter = self.get_filter(observation)
-        return self.pi(ft, val_filter)
+    def greedy_action(self, observation):
+        state_features, valid_features = self.generate_features(observation)
+        action = self.pi(state_features, valid_features)
+        return filter_valid_moves(observation).index(self.deck[action])
 
-    def features_state(self, observation):
-        return get_features(observation, feature_list=self.FT_LIST, 
+    def generate_features(self, observation):
+        state_features = get_features(observation, feature_list=self.FT_LIST, 
             played_cards=self.played_cards, won_cards=self.won_cards, scores=self.scores)
-
-    def get_filter(self, observation):
-        val_moves = filter_valid_moves(observation)
-        deck_ref = deck_reference()
-        indices_valid = [deck_ref[card] for card in val_moves]
-        val_filter = torch.zeros(52).float()
-        for index in indices_valid:
-            val_filter[index] = 1
-        return val_filter
-
-    def get_state_info(self, observation):
-        return self.features_state(observation), self.get_filter(observation)
+        hand = observation['data']['hand']
+        valid_features = cards_to_valid_bin_features(hand)
+        return state_features, valid_features

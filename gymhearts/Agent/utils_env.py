@@ -133,6 +133,10 @@ def cards_to_bin_features(cards):
         feature_vec[deck[card]] = 1
     return feature_vec 
 
+def cards_to_valid_bin_features(cards):
+    valid_cards = filter_valid_moves(cards)
+    return cards_to_bin_features(valid_cards)
+
 def in_hand_features(observation):
     return cards_to_bin_features(observation['data']['hand'])
 
