@@ -32,8 +32,14 @@ class REINFORCE_Agent:
         # Overwrite -> comment out if not needed
         self.device = torch.device('cpu')
 
-        self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), 52, self.ALPHA)
-        self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), self.ALPHA)
+        # Load model if desired
+        model_name = params.get('load_model', '')
+        if model_name:
+            self.nn = load_model(model_name, 'mc_nn', self.FT_LIST).to(self.device)
+            self.pi, self.baseline = load_model(model_name, 'reinforce', self.FT_LIST)
+        else:
+            self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), params)
+            self.baseline = VApproximationWithNN(feature_length(self.FT_LIST), params)
 
         self.deck = create_deck()
         self.deck_reference = deck_reference()

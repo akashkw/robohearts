@@ -137,8 +137,8 @@ def save_model(value_model, model_name, model_type, pi_model=None):
         with open(filename, 'wb') as file:
             pickle.dump(value_model, file)
     elif model_type == 'reinforce':
-        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_v.th'))
         save(pi_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_pi.th'))
+        save(value_model.state_dict(), path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_v.th'))
     else:
         if model_type == '':
             raise ValueError(f"model_type is blank!")
@@ -149,7 +149,7 @@ def load_model(model_name, model_type, feature_list=None):
     from torch import load
     from os import path
     if model_type == "mc_nn":
-        model = MLPClassifier(input_features=feature_length(feature_list))
+        model = MLPClassifier(feature_length(feature_list))
         model.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}.th'), map_location='cpu'))
         return model
     elif model_type == 'mc_simple':
@@ -159,8 +159,11 @@ def load_model(model_name, model_type, feature_list=None):
             weights = pickle.load(file)
         return weights
     elif model_type == 'reinforce':
-        pi = []
-        return None
+        pi = PiApproximationWithNN(feature_length(feature_list))
+        v = VApproximationWithNN(feature_length(feature_list))
+        pi.nn.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_pi.th'), map_location='cpu'))
+        v.nn.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), f'models/{model_name}_v.th'), map_location='cpu'))
+        return pi, v
     else:
         if model_type == '':
             raise ValueError(f"model_type is blank!")
