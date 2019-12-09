@@ -35,7 +35,6 @@ class REINFORCE_Agent:
         # Load model if desired
         model_name = params.get('load_model', '')
         if model_name:
-            self.nn = load_model(model_name, 'mc_nn', self.FT_LIST).to(self.device)
             self.pi, self.baseline = load_model(model_name, 'reinforce', self.FT_LIST)
         else:
             self.pi = PiApproximationWithNN(feature_length(self.FT_LIST), params)
