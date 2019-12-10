@@ -47,7 +47,7 @@ The following base packages are required to run the repository:
 ### First Steps
 This repository contains code for running repeatable experiments on the utility of various subsets of raw feature state for value approximation.  We have provided 4 notebooks to run repeatable expirements for this environment:
 
- - [run_hearts.ipynb](./run_hearts.ipynb) Executable for the grader / reader to run, this will showcase the performance of our best models.
+ - [run_hearts.ipynb](./run_hearts.ipynb) Executable for the grader / reader to run, this will showcase the performance of our best models. Run this from the root directory of the repo -- __jupyter notebook run_hearts.ipynb__. Make sure requirements are installed. May be easiest on a conda installation.
 
  - [simple.ipynb](./simple.ipynb) trains and tests linear value function approximation using monte carlo rollouts
 
