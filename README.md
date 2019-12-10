@@ -8,7 +8,7 @@ _Using reinforcement learning for the game of hearts. <3_
 " target="_blank"><img src="http://img.youtube.com/vi/n8zhiRtXqHM/0.jpg" 
 alt="Video of project description" width="240" height="180" border="10" /></a>
 
-[Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
+[Results and Writeup](./writeup/CS394R_Final_Project.pdf)
 
 ---
 
@@ -33,11 +33,11 @@ This repository contains code for running repeatable experiments on the utility 
 
  - [run_hearts.ipynb](./run_hearts.ipynb) Executable for the grader / reader to run, this will showcase the performance of our best models. Run this from the root directory of the repo -- __jupyter notebook run_hearts.ipynb__. Make sure requirements are installed. May be easiest on a conda installation.
 
- - [simple.ipynb](./simple.ipynb) trains and tests linear value function approximation using monte carlo rollouts
+ - [simple.ipynb](./train_mc_simple.ipynb) trains and tests linear value function approximation using monte carlo rollouts
 
- - [mlp.ipynb](./mlp.ipynb) trains and tests non linear value function approximation with a Neural Network using monte carlo rollouts with a configurable feature set
+ - [mlp.ipynb](./train_mc_nn.ipynb) trains and tests non linear value function approximation with a Neural Network using monte carlo rollouts with a configurable feature set
 
- - [reinforce.ipynb](./reinforce.ipynb) trains and test a multi layer perception network using the policy gradient algorithm REINFORCE.
+ - [reinforce.ipynb](./train_reinforce.ipynb) trains and test a multi layer perception network using the policy gradient algorithm REINFORCE.
 
 
 ## Repository Structure
