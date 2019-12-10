@@ -4,8 +4,8 @@
 
 _Using reinforcement learning for the game of hearts. <3_
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=YOUTUBE_VIDEO_ID_HERE
-" target="_blank"><img src="http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=n8zhiRtXqHM
+" target="_blank"><img src="http://img.youtube.com/vi/n8zhiRtXqHM/0.jpg" 
 alt="Video of project description" width="240" height="180" border="10" /></a>
 
 [Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
