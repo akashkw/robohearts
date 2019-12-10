@@ -17,16 +17,16 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
  - ~~Clean simple and reinforce notebooks~~
  - ~~Clean code we have added (and specify which we added / modified)~~
  - ~~Add data to writeup~~
- - Record video and add link
+ - ~~Record video and add link~~
  - Final WriteUp
- - Update ReadMe 
+ - ~~Update ReadMe~~
  - Review checklist (website)
  - Turn it in!
 
 ### Stretch Goals:
- - Refactor agent utils, reinforce utils into nn utils, hand utils
+ - ~~Refactor agent utils, reinforce utils into nn utils, hand utils~~
  - Add Cool logo to repo
- - Comment all the code
+ - ~Comment all the code~
 
 ## References:
 This Opengym AI environment is a slightly modified version of https://github.com/zmcx16/OpenAI-Gym-Hearts
@@ -47,7 +47,7 @@ The following base packages are required to run the repository:
 ### First Steps
 This repository contains code for running repeatable experiments on the utility of various subsets of raw feature state for value approximation.  We have provided 4 notebooks to run repeatable expirements for this environment:
 
- - [run_hearts.ipynb](./run_hearts.ipynb) a notebook for gaining familiarty with the HEARTS environment.  Allows user to play an interactive game of hearts
+ - [run_hearts.ipynb](./run_hearts.ipynb) Executable for the grader / reader to run, this will showcase the performance of our best models.
 
  - [simple.ipynb](./simple.ipynb) trains and tests linear value function approximation using monte carlo rollouts
 
@@ -99,12 +99,17 @@ These models correspond to the models trained in using only in_hand set of raw f
 #### policy_grad_models
 This directory store the models trained using the REINFORCE algorithm, following the naming convention in feature_study_models.  
 
+#### reinforce_alpha_study
+This directory stores the models from our learning rate study of the REINFORCE with baseline method.
+
+#### mc_simple
+Stores the best model from our simple mc function approximator
 
 ### Writeup
 This folder contains a report on the construction and findings of our experiments
 
-#### Data
-Contains charts, graphs, and the raw data collected for our expirement
+### Data
+[Raw data from experiments](https://docs.google.com/spreadsheets/d/1O8LAQ1LNYp1OG_tdRdm83FdInzPIsjeYT0f5_iFs5ZQ/edit?usp=sharing)
 
 
 
