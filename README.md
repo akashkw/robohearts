@@ -11,22 +11,6 @@ alt="Video of project description" width="240" height="180" border="10" /></a>
 [Results and Writeup](./writeup/CS394R_Final_Project_First_Draft.pdf)
 
 ---
-## TODO LAST DAY:
- - ~~Finish Data Collection~~
- - ~~Rename alpha parameter models based on learning rate, upload models and weights for the final writeup~~
- - ~~Clean simple and reinforce notebooks~~
- - ~~Clean code we have added (and specify which we added / modified)~~
- - ~~Add data to writeup~~
- - ~~Record video and add link~~
- - Final WriteUp
- - ~~Update ReadMe~~
- - Review checklist (website)
- - Turn it in!
-
-### Stretch Goals:
- - ~~Refactor agent utils, reinforce utils into nn utils, hand utils~~
- - Add Cool logo to repo
- - ~Comment all the code~
 
 ## References:
 This Opengym AI environment is a slightly modified version of https://github.com/zmcx16/OpenAI-Gym-Hearts
